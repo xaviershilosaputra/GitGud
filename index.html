@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitGud</title>
+  <meta name="description" content="An archaeological expedition through the ruins of a lost civilization. Master Git version control through story-driven discovery.">
+  <meta property="og:title" content="GitGud — Chronicles of the Lost Repository">
+  <meta property="og:description" content="Master Git commands through immersive story-driven archaeology.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div id="prologue-screen" class="screen active">
+    <div class="prologue-bg"></div>
+    <div class="prologue-content">
+      <div class="prologue-emblem">&#9670;</div>
+      <div class="prologue-subtitle">AN ARCHAEOLOGICAL EXPEDITION</div>
+      <h1 class="prologue-title">CHRONICLES<br><span>OF THE LOST</span><br>REPOSITORY</h1>
+      <div class="prologue-divider"></div>
+      <div class="prologue-text" id="prologue-text"></div>
+      <div class="prologue-actions">
+        <button id="prologue-next-btn" class="btn-ancient">CONTINUE</button>
+        <div class="prologue-page" id="prologue-page">1 / 5</div>
+      </div>
+    </div>
+    <div class="prologue-dust"></div>
+  </div>
+
+  <div id="game-screen" class="screen">
+
+    <header id="header">
+      <div class="logo" id="game-logo">
+        <span class="logo-icon">&#9670;</span>
+        <span class="logo-text">GitGud</span>
+        <span class="logo-era" id="logo-era">THE ANCIENT ARCHIVE</span>
+      </div>
+      <div class="header-center">
+        <div class="arc-indicator" id="arc-indicator">ARC I: THE AWAKENING</div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-label" id="progress-label">0 / 35</div>
+      </div>
+      <div class="header-right">
+        <div class="shard-display" id="shard-display">
+          <span class="shard-gem">&#9670;</span>
+          <span id="shard-count">0</span>
+          <span class="shard-label">SHARDS</span>
+        </div>
+        <div class="streak-pill" id="streak-pill">
+          <span id="streak-count">0</span>&#x25B8; STREAK
+        </div>
+        <button class="hdr-btn" id="sound-btn" aria-label="Toggle sound">&#9834;</button>
+        <button class="hdr-btn" id="map-btn" aria-label="View map">MAP</button>
+      </div>
+    </header>
+
+    <div id="main-layout">
+
+      <aside id="sidebar" aria-label="Git timeline graph">
+        <div class="sidebar-title">CHRONICLE</div>
+        <div id="git-graph" role="list" aria-label="Completed chapters"></div>
+      </aside>
+
+      <main id="content-area" role="main">
+
+        <section id="story-panel" aria-label="Story narrative">
+          <div class="story-top">
+            <div class="chapter-badge-row">
+              <span class="chapter-badge" id="chapter-badge">Ch. 01</span>
+              <span class="arc-badge" id="arc-badge">ARC I</span>
+              <span class="qtype-badge" id="qtype-badge">TERMINAL</span>
+            </div>
+            <h2 class="chapter-title" id="chapter-title">Loading...</h2>
+          </div>
+          <div class="story-body">
+            <div class="story-icon" id="story-icon" aria-hidden="true">&#9670;</div>
+            <p class="story-narrative" id="story-narrative"></p>
+          </div>
+          <div class="task-box" id="task-box" role="note" aria-label="Mission task">
+            <span class="task-label">MISSION</span>
+            <span id="task-text"></span>
+          </div>
+        </section>
+
+        <section id="question-zone" aria-label="Question area" aria-live="polite"></section>
+
+        <div id="controls-bar">
+          <button class="ctrl-btn" id="hint-btn" aria-label="Use hint for 5 shards">
+            <span class="ctrl-icon">&#9670;</span> ORACLE HINT <span class="ctrl-cost">-5</span>
+          </button>
+          <button class="ctrl-btn ctrl-skip" id="skip-btn" aria-label="Skip this chapter">
+            SKIP CHAPTER
+          </button>
+          <div class="xp-preview" id="xp-preview">
+            <span class="xp-icon">+</span><span id="xp-val">10</span> SHARDS ON SUCCESS
+          </div>
+        </div>
+
+      </main>
+
+      <aside id="right-panel" aria-label="Quick reference">
+        <div class="sidebar-title">FIELD NOTES</div>
+        <div id="field-notes"></div>
+      </aside>
+
+    </div>
+  </div>
+
+  <div id="map-overlay" class="overlay" role="dialog" aria-label="Chapter map" aria-hidden="true">
+    <div class="overlay-inner">
+      <div class="overlay-title">EXPEDITION MAP</div>
+      <div id="map-chapters"></div>
+      <button class="btn-close" id="map-close">CLOSE</button>
+    </div>
+  </div>
+
+  <div id="feedback-overlay" class="overlay" role="dialog" aria-hidden="true">
+    <div class="overlay-inner feedback-inner">
+      <div class="feedback-status" id="fb-status">[SUCCESS]</div>
+      <h3 class="feedback-title" id="fb-title">SECTOR RECOVERED</h3>
+      <div class="feedback-explanation" id="fb-explanation"></div>
+      <div class="feedback-example" id="fb-example"></div>
+      <div class="feedback-reward" id="fb-reward">+10 SHARDS</div>
+      <button class="btn-ancient" id="fb-continue">CONTINUE EXPEDITION</button>
+    </div>
+  </div>
+
+  <div id="win-screen" class="screen" aria-hidden="true">
+    <div class="win-bg"></div>
+    <div class="win-content">
+      <div class="win-emblem">&#9670;</div>
+      <h2 class="win-title">REPOSITORY RESTORED</h2>
+      <p class="win-sub">You have traversed time itself. From dust and stone to pure light, the Chronicle lives again.</p>
+      <div class="win-stats">
+        <div class="win-stat"><div class="win-num" id="win-shards">0</div><div class="win-lbl">TOTAL SHARDS</div></div>
+        <div class="win-stat"><div class="win-num" id="win-streak">0</div><div class="win-lbl">MAX STREAK</div></div>
+        <div class="win-stat"><div class="win-num">35</div><div class="win-lbl">CHAPTERS DONE</div></div>
+      </div>
+      <button class="btn-ancient" onclick="GAME.reset()">REPLAY EXPEDITION</button>
+    </div>
+  </div>
+
+  <script src="js/chapters.js"></script>
+  <script src="js/script.js"></script>
+</body>
+</html>
