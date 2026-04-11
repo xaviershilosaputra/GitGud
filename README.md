@@ -34,64 +34,17 @@
 
 ## Project structure
 
+```text
 gitgud/
-├── index.html                Entry point HTML
-├── package.json
-├── vite.config.js            Build config + GitHub Pages base path
-├── .github/
-│   └── workflows/
-│       └── deploy.yml        Auto-deploy to GitHub Pages on push
+├── index.html
 └── src/
-    ├── main.jsx              React root, mounts <App />
-    ├── App.jsx               App shell and global provider setup
-    │
-    ├── constants/            Game data and static content
-    │   ├── chapters.js       The full dataset for all 5 arcs
-    │   ├── terminal.js       Command definitions and valid responses
-    │   └── assets.js         Narrative text and UI strings
-    │
-    ├── hooks/                Reusable logic
-    │   ├── useGameState.js   Handles progression, XP, and unlocked chapters
-    │   └── useTerminal.js    Processes user input and command validation
-    │
-    ├── components/
-    │   ├── Navigation.jsx    Arc and chapter selection map
-    │   ├── Narrative.jsx     Story display and task descriptions
-    │   ├── Terminal.jsx      Command line interface simulation
-    │   ├── HistoryGraph.jsx  Visual representation of the Git tree
-    │   ├── Feedback.jsx      Success and error overlays
-    │   └── Sidebar/
-    │       ├── FieldNotes.jsx  Unlocked command reference
-    │       └── Stats.jsx       User XP and progress tracking
-    │
-    └── styles/
-        ├── base.css          Reset and global variables
-        ├── game.css          Layout for the main adventure screen
-        ├── terminal.css      Terminal styling and animations
-        └── navigation.css    Map and arc transition styles
-
----
-
-## Getting started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) version 18 or higher
-- npm (comes with Node)
-
-### Running locally
-
-```bash
-# 1. Clone the repository
-git clone [https://github.com/xaviershilosaputra/GitGud.git](https://github.com/xaviershilosaputra/GitGud.git)
-cd GitGud
-
-# 2. Install dependencies
-npm install
-
-# 3. Start the development server
-npm run dev
+    ├── styles.css
+    ├── js/
+        ├── script.js
+        └── chapters.js
+   
 ```
+
 ### The Five Arcs
 
 | Arc | Title | Focus |
