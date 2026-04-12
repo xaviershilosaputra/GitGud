@@ -2,8 +2,6 @@
 
 **GitGud** is an interactive and story-based Git learning platform. You play the role of a specialist exploring the ancient Kethara Repository, where you must restore a corrupted archive using real-world Git commands. The story is divided into five separate arcs that guide the user from basic file tracking to advanced professional workflows. All tasks require you to interact with a terminal or solve logic puzzles based on Git's working mechanism.
 
----
-
 ## Features
 
 - **Narrative-driven learning** — Progress through a structured story across five atmospheric arcs.
@@ -17,15 +15,11 @@
 - **Professional workflows** — Master the sequence of branching, rebasing, and pushing used by modern development teams.
 - **Responsive design** — The website works well on many variations of screen sizes (desktop, mobile, etc)
 
----
-
 ## Tech stack
 
 - HTML
 - CSS
 - JS
-
----
 
 ## Project structure
 
@@ -51,8 +45,6 @@ gitgud/
 | IV | The Anomaly | Stashing, Reset, and Revert |
 | V | The Restoration | Rebasing, Reflog, and Tags |
 
----
-
 ### LocalStorage usage
 
 GitGud saves your progress locally so you can resume your expedition at any time.
@@ -63,8 +55,6 @@ GitGud saves your progress locally so you can resume your expedition at any time
 | `gg_stats` | Total XP earned and level |
 | `gg_notes` | List of unlocked commands in Field Notes |
 | `gg_history` | Current state of the simulated Git graph |
-
----
 
 ### Future updates
 
