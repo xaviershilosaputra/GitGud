@@ -7,7 +7,7 @@
 ## Features
 
 - **Narrative-driven learning** — Progress through a structured story across five atmospheric arcs.
-- **Interactive terminal** — Practice real Git commands in a simulated terminal environment that provides instant feedback.
+- **Interactive terminal** — Practice using real Git commands in a simulated terminal environment with instant feedback.
 - **Visual history graph** — See your commits, branches, and merges visualized in real time as you execute commands.
 - **Logic puzzles** — Solve challenges related to conflict resolution and workflow ordering to deepen your understanding.
 - **Arc progression** — Move from "The Awakening" (basic tracking) to "The Restoration" (advanced professional workflows).
@@ -15,34 +15,30 @@
 - **XP and leveling** — Earn experience points for every successful task to track your mastery of version control.
 - **Conflict simulation** — Learn to identify and resolve merge markers in a safe, guided environment.
 - **Professional workflows** — Master the sequence of branching, rebasing, and pushing used by modern development teams.
-- **Responsive design** — Learn on your desktop or continue your expedition on mobile devices.
+- **Responsive design** — The website works well on many variations of screen sizes (desktop, mobile, etc)
 
 ---
 
 ## Tech stack
 
-| Layer | Technology |
-|---|---|
-| UI framework | React 18 (via Vite) |
-| State management | React Context API |
-| Terminal simulation | Custom JavaScript logic |
-| Styling | Plain CSS with CSS custom properties |
-| State persistence | Browser `localStorage` |
-| Deployment | GitHub Pages via GitHub Actions |
+- HTML
+- CSS
+- JS
 
 ---
 
 ## Project structure
 
 ```text
+
 gitgud/
-├── index.html
-└── src/
-    ├── styles.css
-    ├── js/
-        ├── script.js
-        └── chapters.js
-   
+├── css/
+│   └── styles.css
+├── js/
+│   ├── chapters.js
+│   └── script.js
+└── index.html
+
 ```
 
 ### The Five Arcs
@@ -74,11 +70,10 @@ GitGud saves your progress locally so you can resume your expedition at any time
 
 * **Multiplayer "Race" mode** — Compete with others to solve Git puzzles the fastest.
 * **Custom scenario editor** — Allow educators to create their own narrative arcs and tasks.
-* **Advanced visualization** — More detailed 3D representations of complex rebase operations.
-* **IDE integration** — A plugin to bring the GitGud narrative experience directly into VS Code.
+* **Advanced visualization** — Addition of more detailed 3D representations of complex rebase operations.
 
 ## License
 
-MIT License — see LICENSE for the full text.
+MIT License — see [LICENSE](https://github.com/xaviershilosaputra/GitGud/blob/main/LICENSE) for the full text.
 
 You are free to use, modify, and redistribute this project for any purpose, including commercially. Attribution to the original author must be maintained.
