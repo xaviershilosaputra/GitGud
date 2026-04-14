@@ -15,8 +15,8 @@ const SFX = {
   tone(freq, type, vol, startAt, duration) {
     if (!this.enabled || !this.ctx) return;
     const ac = this.ctx;
-    const o = ac.createOscillator();
-    const g = ac.createGain();
+    const o  = ac.createOscillator();
+    const g  = ac.createGain();
     o.connect(g);
     g.connect(ac.destination);
     o.type = type;
@@ -31,51 +31,26 @@ const SFX = {
   play(name) {
     if (!this.enabled || !this.ctx) return;
     this.resume();
-    const t = this.ctx.currentTime;
-    const sequences = {
-      click:   () => this.tone(800, 'square', 0.04, t, 0.04),
-      success: () => {
-        [440, 554, 659, 880].forEach((f, i) => this.tone(f, 'sine', 0.12, t + i * 0.07, 0.12));
-      },
-      error: () => {
-        [220, 180].forEach((f, i) => this.tone(f, 'sawtooth', 0.06, t + i * 0.1, 0.15));
-      },
-      coin: () => {
-        [880, 1100, 1320].forEach((f, i) => this.tone(f, 'sine', 0.1, t + i * 0.05, 0.1));
-      },
-      hint: () => {
-        [660, 550, 440].forEach((f, i) => this.tone(f, 'triangle', 0.08, t + i * 0.09, 0.12));
-      },
-      streak: () => {
-        [440, 554, 659, 880, 1100, 880].forEach((f, i) =>
-          this.tone(f, 'sine', 0.13, t + i * 0.06, 0.1));
-      },
-      win: () => {
-        [261, 329, 392, 523, 659, 784, 1047].forEach((f, i) =>
-          this.tone(f, 'sine', 0.14, t + i * 0.09, 0.15));
-      },
-      pageFlip: () => {
-        this.tone(440, 'triangle', 0.06, t, 0.06);
-        this.tone(880, 'triangle', 0.04, t + 0.04, 0.05);
-      },
-      eraShift: () => {
-        [200, 400, 600, 800, 400].forEach((f, i) =>
-          this.tone(f, 'sine', 0.08, t + i * 0.12, 0.18));
-      }
+    const t   = this.ctx.currentTime;
+    const seq = {
+      click:    () => this.tone(800,'square',0.04,t,0.04),
+      success:  () => [440,554,659,880].forEach((f,i) => this.tone(f,'sine',0.12,t+i*0.07,0.12)),
+      error:    () => [220,180].forEach((f,i) => this.tone(f,'sawtooth',0.06,t+i*0.1,0.15)),
+      coin:     () => [880,1100,1320].forEach((f,i) => this.tone(f,'sine',0.1,t+i*0.05,0.1)),
+      hint:     () => [660,550,440].forEach((f,i) => this.tone(f,'triangle',0.08,t+i*0.09,0.12)),
+      streak:   () => [440,554,659,880,1100,880].forEach((f,i) => this.tone(f,'sine',0.13,t+i*0.06,0.1)),
+      win:      () => [261,329,392,523,659,784,1047].forEach((f,i) => this.tone(f,'sine',0.14,t+i*0.09,0.15)),
+      pageFlip: () => { this.tone(440,'triangle',0.06,t,0.06); this.tone(880,'triangle',0.04,t+0.04,0.05); },
+      eraShift: () => [200,400,600,800,400].forEach((f,i) => this.tone(f,'sine',0.08,t+i*0.12,0.18)),
     };
-    if (sequences[name]) sequences[name]();
+    if (seq[name]) seq[name]();
   }
 };
 
 const DEFAULT_STATE = {
-  shards: 0,
-  currentStep: 0,
-  streak: 0,
-  maxStreak: 0,
-  soundOn: true,
-  prologueDone: false,
-  completed: [],
-  fieldNotes: []
+  shards: 0, currentStep: 0, streak: 0, maxStreak: 0,
+  soundOn: true, prologueDone: false, tourDone: false,
+  completed: [], fieldNotes: []
 };
 
 let STATE = { ...DEFAULT_STATE };
@@ -84,10 +59,10 @@ const PROLOGUE = {
   index: 0,
 
   init() {
-    this.el = document.getElementById('prologue-text');
+    this.el     = document.getElementById('prologue-text');
     this.pageEl = document.getElementById('prologue-page');
-    this.btn = document.getElementById('prologue-next-btn');
-    this.btn.addEventListener('click', () => this.next());
+    this.btn    = document.getElementById('prologue-next-btn');
+    this.btn.onclick = () => this.next();
     this.render();
   },
 
@@ -95,12 +70,12 @@ const PROLOGUE = {
     const slide = PROLOGUE_SLIDES[this.index];
     this.el.style.opacity = '0';
     setTimeout(() => {
-      this.el.textContent = slide;
+      this.el.textContent      = slide;
       this.el.style.transition = 'opacity 0.6s ease';
-      this.el.style.opacity = '1';
+      this.el.style.opacity    = '1';
     }, 100);
     this.pageEl.textContent = `${this.index + 1} / ${PROLOGUE_SLIDES.length}`;
-    this.btn.textContent = this.index < PROLOGUE_SLIDES.length - 1 ? 'CONTINUE' : 'BEGIN EXPEDITION';
+    this.btn.textContent    = this.index < PROLOGUE_SLIDES.length - 1 ? 'CONTINUE' : 'BEGIN EXPEDITION';
   },
 
   next() {
@@ -115,24 +90,192 @@ const PROLOGUE = {
 
   finish() {
     STATE.prologueDone = true;
+    STATE.tourDone     = false;
     GAME.saveState();
     const prologue = document.getElementById('prologue-screen');
-    const game = document.getElementById('game-screen');
+    const game     = document.getElementById('game-screen');
     prologue.style.transition = 'opacity 0.8s ease';
-    prologue.style.opacity = '0';
+    prologue.style.opacity    = '0';
     setTimeout(() => {
       prologue.classList.remove('active');
       game.classList.add('active');
       GAME.renderChapter();
+      GAME.rebuildGraph();
+      GAME.updateHeader();
+      setTimeout(() => TOUR.start(), 600);
     }, 800);
   }
 };
 
-let MATCH = { selected: null, col: null, matches: 0 };
+const TOUR = {
+  step:  0,
+  _box:  null,
+  steps: [
+    { target: '#story-panel',   title: 'The Story',         body: 'Each chapter begins with a narrative that sets the scene. Read it to understand the context before attempting the task.',                                              position: 'bottom' },
+    { target: '#task-box',      title: 'Your Mission',      body: 'The mission box tells you exactly what to do. Some chapters ask you to type a command, others ask you to choose, sort, or match.',                                   position: 'bottom' },
+    { target: '#question-zone', title: 'The Question Zone', body: 'This is where you answer. For terminal questions, type the command and press Enter. For others, click or drag your answer.',                                        position: 'top'    },
+    { target: '#hint-btn',      title: 'Oracle Hint',       body: 'Stuck? Spend 5 Shards to reveal a hint. Shards are earned by answering correctly, so use them sparingly.',                                                         position: 'top'    },
+    { target: '#shard-display', title: 'Shards',            body: 'Shards are your score. You earn them for every correct answer. Build a streak and the rewards feel even better.',                                                  position: 'bottom' },
+    { target: '#map-btn',       title: 'Expedition Map',    body: 'The map shows every chapter in the archive. Completed chapters are marked in green. Use it to track your progress at any time.',                                   position: 'bottom' },
+    { target: '#settings-btn',  title: 'Settings',          body: 'Access settings to toggle sound, restart the expedition, replay the prologue, or view this guide again at any time.',                                              position: 'bottom' },
+    { target: '#git-graph',     title: 'The Chronicle',     body: 'The left panel draws your commit graph as you progress. Each dot is a chapter you have completed. Branch and merge nodes appear in different colors.',             position: 'right'  },
+    { target: '#right-panel',   title: 'Field Notes',       body: 'Every command you master gets logged here as a quick reference. By the end of the expedition you will have a complete Git cheat sheet.',                           position: 'left'   },
+  ],
 
-let SORT = { dragging: null };
+  start() {
+    this.step = 0;
+    this._build();
+    this._render();
+  },
+
+  _build() {
+    if (document.getElementById('tour-overlay')) {
+      document.getElementById('tour-overlay').style.display = 'block';
+      return;
+    }
+    const ov  = document.createElement('div');
+    ov.id     = 'tour-overlay';
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.id    = 'tour-svg';
+    svg.setAttribute('width','100%');
+    svg.setAttribute('height','100%');
+    svg.style.cssText = 'position:absolute;inset:0;pointer-events:none;width:100%;height:100%;';
+
+    const defs     = document.createElementNS('http://www.w3.org/2000/svg','defs');
+    const mask     = document.createElementNS('http://www.w3.org/2000/svg','mask');
+    mask.id        = 'tour-mask';
+    const maskFill = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    maskFill.setAttribute('width','100%');
+    maskFill.setAttribute('height','100%');
+    maskFill.setAttribute('fill','white');
+    const hole = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    hole.id    = 'tour-hole';
+    hole.setAttribute('fill','black');
+    hole.setAttribute('rx','6');
+    hole.setAttribute('width','0');
+    hole.setAttribute('height','0');
+    mask.appendChild(maskFill);
+    mask.appendChild(hole);
+    defs.appendChild(mask);
+    svg.appendChild(defs);
+
+    const dim = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    dim.setAttribute('width','100%');
+    dim.setAttribute('height','100%');
+    dim.setAttribute('fill','rgba(0,0,0,0.72)');
+    dim.setAttribute('mask','url(#tour-mask)');
+    svg.appendChild(dim);
+    ov.appendChild(svg);
+
+    const box  = document.createElement('div');
+    box.id     = 'tour-box';
+    box.innerHTML = `
+      <div id="tour-step-label"></div>
+      <div id="tour-title"></div>
+      <div id="tour-body"></div>
+      <div id="tour-actions">
+        <button id="tour-skip" class="tour-btn-skip">SKIP GUIDE</button>
+        <div id="tour-dots"></div>
+        <button id="tour-next" class="tour-btn-next">NEXT</button>
+      </div>`;
+    this._box = box;
+    ov.appendChild(box);
+    document.body.appendChild(ov);
+
+    document.getElementById('tour-skip').addEventListener('click', () => this.finish());
+    document.getElementById('tour-next').addEventListener('click', () => this.advance());
+  },
+
+  _render() {
+    const ov  = document.getElementById('tour-overlay');
+    const box = this._box || document.getElementById('tour-box');
+    if (!ov || !box) return;
+    ov.style.display = 'block';
+
+    const s = this.steps[this.step];
+    document.getElementById('tour-step-label').textContent = `STEP ${this.step + 1} OF ${this.steps.length}`;
+    document.getElementById('tour-title').textContent      = s.title;
+    document.getElementById('tour-body').textContent       = s.body;
+    document.getElementById('tour-next').textContent       = this.step < this.steps.length - 1 ? 'NEXT' : 'START EXPLORING';
+
+    const dots = document.getElementById('tour-dots');
+    dots.innerHTML = this.steps.map((_,i) =>
+      `<span class="tour-dot${i === this.step ? ' active' : ''}"></span>`
+    ).join('');
+
+    this._clearHighlight();
+    const target = document.querySelector(s.target);
+
+    if (target) {
+      const pad  = 8;
+      const rect = target.getBoundingClientRect();
+      const hole = document.getElementById('tour-hole');
+      if (hole) {
+        hole.setAttribute('x',      rect.left   - pad);
+        hole.setAttribute('y',      rect.top    - pad);
+        hole.setAttribute('width',  rect.width  + pad * 2);
+        hole.setAttribute('height', rect.height + pad * 2);
+      }
+      target.classList.add('tour-spotlight');
+      if (getComputedStyle(target).position === 'static') target.style.position = 'relative';
+      target.style.zIndex = '9901';
+      this._positionBox(rect, s.position);
+    } else {
+      const hole = document.getElementById('tour-hole');
+      if (hole) { hole.setAttribute('width','0'); hole.setAttribute('height','0'); }
+      box.style.top = '50%'; box.style.left = '50%'; box.style.transform = 'translate(-50%,-50%)';
+    }
+  },
+
+  _clearHighlight() {
+    document.querySelectorAll('.tour-spotlight').forEach(el => {
+      el.classList.remove('tour-spotlight');
+      el.style.removeProperty('position');
+      el.style.removeProperty('z-index');
+    });
+  },
+
+  _positionBox(targetRect, position) {
+    const box = this._box || document.getElementById('tour-box');
+    const vw  = window.innerWidth;
+    const vh  = window.innerHeight;
+    const bw  = Math.min(340, vw - 32);
+    const bh  = 230;
+    const gap = 16;
+    box.style.width     = bw + 'px';
+    box.style.transform = '';
+    let top, left;
+    if      (position === 'bottom') { top = targetRect.bottom + gap; left = targetRect.left + targetRect.width / 2 - bw / 2; }
+    else if (position === 'top')    { top = targetRect.top - bh - gap; left = targetRect.left + targetRect.width / 2 - bw / 2; }
+    else if (position === 'right')  { top = targetRect.top + targetRect.height / 2 - bh / 2; left = targetRect.right + gap; }
+    else if (position === 'left')   { top = targetRect.top + targetRect.height / 2 - bh / 2; left = targetRect.left - bw - gap; }
+    box.style.left = Math.max(12, Math.min(left, vw - bw - 12)) + 'px';
+    box.style.top  = Math.max(12, Math.min(top,  vh - bh - 12)) + 'px';
+  },
+
+  advance() {
+    SFX.play('click');
+    this.step++;
+    if (this.step >= this.steps.length) this.finish();
+    else this._render();
+  },
+
+  finish() {
+    SFX.play('click');
+    const ov = document.getElementById('tour-overlay');
+    if (ov) ov.style.display = 'none';
+    this._clearHighlight();
+    STATE.tourDone = true;
+    GAME.saveState();
+  }
+};
+
+let MATCH = { selected: null, col: null, matches: 0 };
+let SORT  = { dragging: null };
 
 const GAME = {
+  _twId: 0,
 
   init() {
     SFX.init();
@@ -146,56 +289,85 @@ const GAME = {
       this.renderChapter();
       this.rebuildGraph();
       this.updateHeader();
+      if (!STATE.tourDone) setTimeout(() => TOUR.start(), 400);
     }
 
-    document.getElementById('hint-btn').addEventListener('click', () => this.showHint());
-    document.getElementById('skip-btn').addEventListener('click', () => this.skipChapter());
-    document.getElementById('sound-btn').addEventListener('click', () => this.toggleSound());
-    document.getElementById('map-btn').addEventListener('click', () => this.openMap());
-    document.getElementById('map-close').addEventListener('click', () => this.closeMap());
-    document.getElementById('fb-continue').addEventListener('click', () => this.closeFeedback());
+    const soundBtn = document.getElementById('sound-btn');
+    soundBtn.textContent = STATE.soundOn ? 'SFX ON' : 'SFX OFF';
+
+    soundBtn.addEventListener('click', () => this.toggleSound());
+    document.getElementById('hint-btn').addEventListener('click',     () => this.showHint());
+    document.getElementById('skip-btn').addEventListener('click',     () => this.skipChapter());
+    document.getElementById('map-btn').addEventListener('click',      () => this.openMap());
+    document.getElementById('map-close').addEventListener('click',    () => this.closeMap());
+    document.getElementById('fb-continue').addEventListener('click',  () => this.closeFeedback());
+    document.getElementById('settings-btn').addEventListener('click', () => this.openSettings());
+    document.getElementById('settings-close').addEventListener('click', () => this.closeSettings());
+
+    document.getElementById('settings-sound-toggle').addEventListener('click', () => { this.toggleSound(); this._updateSettingsSound(); });
+    document.getElementById('settings-tour-btn').addEventListener('click',     () => { this.closeSettings(); setTimeout(() => TOUR.start(), 200); });
+    document.getElementById('settings-prologue-btn').addEventListener('click', () => { this.closeSettings(); this._replayPrologue(); });
+    document.getElementById('settings-reset-btn').addEventListener('click',    () => { document.getElementById('settings-reset-confirm').style.display = 'block'; });
+    document.getElementById('settings-reset-cancel').addEventListener('click', () => { document.getElementById('settings-reset-confirm').style.display = 'none'; });
+    document.getElementById('settings-reset-confirm-btn').addEventListener('click', () => {
+      document.getElementById('settings-reset-confirm').style.display = 'none';
+      this.closeSettings();
+      this.reset();
+    });
+
+    document.getElementById('map-overlay').addEventListener('click',      (e) => { if (e.target === e.currentTarget) this.closeMap(); });
+    document.getElementById('settings-overlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) this.closeSettings(); });
+    document.getElementById('feedback-overlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) this.closeFeedback(); });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if      (document.getElementById('map-overlay').classList.contains('open'))      this.closeMap();
+      else if (document.getElementById('settings-overlay').classList.contains('open')) this.closeSettings();
+      else if (document.getElementById('feedback-overlay').classList.contains('open')) this.closeFeedback();
+      else if (document.getElementById('tour-overlay')?.style.display === 'block')     TOUR.finish();
+    });
 
     document.body.addEventListener('click', () => SFX.resume(), { once: true });
   },
 
   saveState() {
-    localStorage.setItem('gitgud_v3', JSON.stringify(STATE));
+    try { localStorage.setItem('gitgud_v4', JSON.stringify(STATE)); } catch(e) {}
   },
 
   loadState() {
-    const raw = localStorage.getItem('gitgud_v3');
-    if (raw) {
-      try {
-        const saved = JSON.parse(raw);
-        STATE = { ...DEFAULT_STATE, ...saved };
-      } catch (e) { /* use defaults */ }
-    }
+    try {
+      const raw = localStorage.getItem('gitgud_v4') || localStorage.getItem('gitgud_v3');
+      if (raw) STATE = { ...DEFAULT_STATE, ...JSON.parse(raw) };
+    } catch(e) {}
     SFX.enabled = STATE.soundOn;
   },
 
   reset() {
-    STATE = { ...DEFAULT_STATE };
+    const tourEl = document.getElementById('tour-overlay');
+    if (tourEl) tourEl.remove();
+    TOUR._box = null;
+    STATE     = { ...DEFAULT_STATE };
     this.saveState();
-    document.getElementById('win-screen').classList.remove('active');
-    document.getElementById('win-screen').style.display = '';
-    document.getElementById('game-screen').classList.add('active');
-    this.applyEra(1);
-    this.rebuildGraph();
-    this.updateHeader();
-    this.renderChapter();
+    const ws = document.getElementById('win-screen');
+    ws.classList.remove('active');
+    ws.style.display = '';
+    PROLOGUE.index = 0;
+    const prologue = document.getElementById('prologue-screen');
+    prologue.style.opacity    = '1';
+    prologue.style.transition = '';
+    prologue.classList.add('active');
+    document.getElementById('game-screen').classList.remove('active');
+    PROLOGUE.init();
   },
 
   applyEra(arcNum) {
     const arc = ARCS[arcNum];
     if (!arc) return;
-    const body = document.body;
-    body.classList.remove('era-0', 'era-1', 'era-2');
-    if (arc.era !== 'era-0') body.classList.add(arc.era);
-
-    const eraEl = document.getElementById('logo-era');
-    if (eraEl) eraEl.textContent = arc.eraName;
-
+    document.body.classList.remove('era-0','era-1','era-2');
+    if (arc.era !== 'era-0') document.body.classList.add(arc.era);
+    const eraEl  = document.getElementById('logo-era');
     const arcInd = document.getElementById('arc-indicator');
+    if (eraEl)  eraEl.textContent  = arc.eraName;
     if (arcInd) arcInd.textContent = arc.name;
   },
 
@@ -204,79 +376,72 @@ const GAME = {
     if (!ch) { this.showWin(); return; }
 
     const prevArc = STATE.currentStep > 0 ? CHAPTERS[STATE.currentStep - 1].arc : null;
-    if (prevArc !== ch.arc) {
-      if (prevArc !== null) SFX.play('eraShift');
-      this.applyEra(ch.arc);
-    } else {
-      this.applyEra(ch.arc);
-    }
+    if (prevArc !== null && prevArc !== ch.arc) SFX.play('eraShift');
+    this.applyEra(ch.arc);
 
-    document.getElementById('chapter-badge').textContent = `Ch. ${String(ch.id + 1).padStart(2, '0')}`;
+    document.getElementById('chapter-badge').textContent = `Ch. ${String(ch.id + 1).padStart(2,'0')}`;
     const arc = ARCS[ch.arc];
-    document.getElementById('arc-badge').textContent = arc ? arc.label : '';
+    document.getElementById('arc-badge').textContent     = arc ? arc.label : '';
     document.getElementById('chapter-title').textContent = ch.title;
-    document.getElementById('story-icon').innerHTML = arc ? arc.icon : '&#9670;';
+    document.getElementById('story-icon').innerHTML      = arc ? arc.icon : '&#9670;';
 
     const storyEl = document.getElementById('story-narrative');
     storyEl.textContent = '';
-    this.typeWriter(storyEl, ch.story.replace(/\s+/g, ' ').trim(), 18);
+    this.typeWriter(storyEl, ch.story.replace(/\s+/g,' ').trim(), 18);
 
     document.getElementById('task-text').textContent = ch.task;
-    document.getElementById('xp-val').textContent = ch.xp;
+    document.getElementById('xp-val').textContent    = ch.xp;
 
-    const qBadge = document.getElementById('qtype-badge');
     const typeLabels = {
-      terminal: 'TERMINAL',
-      binary:   'BINARY GATE',
-      choice:   'MULTI CHOICE',
-      fill:     'FILL THE GAP',
-      sort:     'DRAG & SORT',
-      match:    'PAIR MATCH',
-      conflict: 'CONFLICT HUNT'
+      terminal: 'TERMINAL', binary: 'BINARY GATE', choice: 'MULTI CHOICE',
+      fill: 'FILL THE GAP', sort: 'DRAG & SORT', match: 'PAIR MATCH',
+      conflict: 'CONFLICT HUNT', hotspot: 'HOTSPOT',
+      'output-read': 'READ OUTPUT', 'truefalse-set': 'TRUE / FALSE', sequence: 'SEQUENCE',
     };
+    const qBadge = document.getElementById('qtype-badge');
     qBadge.textContent = typeLabels[ch.qType] || ch.qType.toUpperCase();
-    qBadge.className = `qtype-badge qtype-${ch.qType}`;
+    qBadge.className   = `qtype-badge qtype-${ch.qType.replace(/-/g,'')}`;
 
     const zone = document.getElementById('question-zone');
     zone.innerHTML = '';
     const renderers = {
-      terminal: () => this.renderTerminal(ch, zone),
-      binary:   () => this.renderBinary(ch, zone),
-      choice:   () => this.renderChoice(ch, zone),
-      fill:     () => this.renderFill(ch, zone),
-      sort:     () => this.renderSort(ch, zone),
-      match:    () => this.renderMatch(ch, zone),
-      conflict: () => this.renderConflict(ch, zone)
+      terminal:        () => this.renderTerminal(ch, zone),
+      binary:          () => this.renderBinary(ch, zone),
+      choice:          () => this.renderChoice(ch, zone),
+      fill:            () => this.renderFill(ch, zone),
+      sort:            () => this.renderSort(ch, zone),
+      match:           () => this.renderMatch(ch, zone),
+      conflict:        () => this.renderConflict(ch, zone),
+      hotspot:         () => this.renderHotspot(ch, zone),
+      'output-read':   () => this.renderOutputRead(ch, zone),
+      'truefalse-set': () => this.renderTrueFalseSet(ch, zone),
+      sequence:        () => this.renderSequence(ch, zone),
     };
     if (renderers[ch.qType]) renderers[ch.qType]();
 
     this.updateHeader();
-    this.buildChapterSidebar();
     this.updateFieldNotes();
   },
 
-  typeWriter(el, text, speed = 20) {
-    let i = 0;
+  typeWriter(el, text, speed = 18) {
+    this._twId++;
+    const myId = this._twId;
+    let i      = 0;
     el.textContent = '';
     const tick = () => {
-      if (i < text.length) {
-        el.textContent += text[i++];
-        setTimeout(tick, speed);
-      }
+      if (myId !== this._twId) return;
+      if (i < text.length) { el.textContent += text[i++]; setTimeout(tick, speed); }
     };
     tick();
   },
 
   updateHeader() {
-    document.getElementById('shard-count').textContent = STATE.shards;
+    document.getElementById('shard-count').textContent  = STATE.shards;
     document.getElementById('streak-count').textContent = STATE.streak;
-    const sp = document.getElementById('streak-pill');
-    sp.className = 'streak-pill' + (STATE.streak >= 3 ? ' hot' : '');
-
-    const pct = Math.round((STATE.currentStep / CHAPTERS.length) * 100);
-    document.getElementById('progress-fill').style.width = pct + '%';
-    document.getElementById('progress-label').textContent =
-      STATE.currentStep + ' / ' + CHAPTERS.length;
+    document.getElementById('streak-pill').className    = 'streak-pill' + (STATE.streak >= 3 ? ' hot' : '');
+    const total = CHAPTERS.length;
+    document.getElementById('progress-fill').style.width  = Math.round((STATE.currentStep / total) * 100) + '%';
+    document.getElementById('progress-label').textContent = STATE.currentStep + ' / ' + total;
   },
 
   rebuildGraph() {
@@ -285,38 +450,24 @@ const GAME = {
     for (let i = 0; i < STATE.currentStep; i++) {
       const ch = CHAPTERS[i];
       if (!ch) break;
-
-      const row = document.createElement('div');
+      const row   = document.createElement('div');
       row.className = 'gn-row';
-      row.setAttribute('role', 'listitem');
+      row.setAttribute('role','listitem');
       row.setAttribute('aria-label', ch.title);
-
       const track = document.createElement('div');
       track.className = 'gn-track';
-
       const dot = document.createElement('div');
-      dot.className = 'gn-dot' +
-        (ch.nodeType === 'branch' ? ' branch' : ch.nodeType === 'merge' ? ' merge' : '');
+      dot.className = 'gn-dot' + (ch.nodeType === 'branch' ? ' branch' : ch.nodeType === 'merge' ? ' merge' : '');
       if (i === STATE.currentStep - 1) dot.classList.add('current');
-
       const label = document.createElement('span');
-      label.className = 'gn-label';
+      label.className   = 'gn-label';
       label.textContent = ch.title;
-
-      if (i > 0) {
-        const line = document.createElement('div');
-        line.className = 'gn-line';
-        track.appendChild(line);
-      }
+      if (i > 0) { const line = document.createElement('div'); line.className = 'gn-line'; track.appendChild(line); }
       track.appendChild(dot);
       row.appendChild(track);
       row.appendChild(label);
       graph.appendChild(row);
     }
-  },
-
-  buildChapterSidebar() {
-    this.updateFieldNotes();
   },
 
   updateFieldNotes() {
@@ -327,30 +478,20 @@ const GAME = {
       return;
     }
     el.innerHTML = STATE.fieldNotes.map(n =>
-      `<div class="note-entry">
-        <div class="note-cmd">${escapeHtml(n.cmd)}</div>
-        <div class="note-desc">${escapeHtml(n.desc)}</div>
-      </div>`
+      `<div class="note-entry"><div class="note-cmd">${escapeHtml(n.cmd)}</div><div class="note-desc">${escapeHtml(n.desc)}</div></div>`
     ).join('');
   },
 
   handleSuccess(ch) {
-    STATE.shards += ch.xp;
+    STATE.shards   += ch.xp;
     STATE.streak++;
     STATE.maxStreak = Math.max(STATE.maxStreak, STATE.streak);
     if (!STATE.completed.includes(ch.id)) STATE.completed.push(ch.id);
-
-    if (ch.fieldNote && !STATE.fieldNotes.some(n => n.cmd === ch.fieldNote.cmd)) {
-      STATE.fieldNotes.push(ch.fieldNote);
-    }
-
-    if (STATE.streak >= 3) SFX.play('streak');
-    else SFX.play('success');
-
+    if (ch.fieldNote && !STATE.fieldNotes.some(n => n.cmd === ch.fieldNote.cmd)) STATE.fieldNotes.push(ch.fieldNote);
+    if (STATE.streak >= 3) SFX.play('streak'); else SFX.play('success');
     const sd = document.getElementById('shard-display');
     sd.classList.add('gained');
     setTimeout(() => sd.classList.remove('gained'), 500);
-
     this.rebuildGraph();
     this.updateHeader();
     this.saveState();
@@ -359,54 +500,41 @@ const GAME = {
 
   showFeedback(ch) {
     const ov = document.getElementById('feedback-overlay');
-    document.getElementById('fb-status').textContent =
-      STATE.streak >= 3 ? `[STREAK x${STATE.streak}]` : '[SUCCESS]';
-    document.getElementById('fb-status').className =
-      'feedback-status ok';
-    document.getElementById('fb-title').textContent =
-      STATE.streak >= 3 ? `HOT STREAK: ${STATE.streak} IN A ROW` : ch.title.toUpperCase() + ' — RECOVERED';
+    document.getElementById('fb-status').textContent    = STATE.streak >= 3 ? `[STREAK x${STATE.streak}]` : '[SUCCESS]';
+    document.getElementById('fb-status').className      = 'feedback-status ok';
+    document.getElementById('fb-title').textContent     = STATE.streak >= 3 ? `HOT STREAK: ${STATE.streak} IN A ROW` : ch.title.toUpperCase() + ' — RECOVERED';
     document.getElementById('fb-explanation').textContent = ch.explanation;
-    document.getElementById('fb-example').textContent = ch.example || '';
-    document.getElementById('fb-reward').textContent = `+${ch.xp} SHARDS`;
+    document.getElementById('fb-example').textContent   = ch.example || '';
+    document.getElementById('fb-reward').textContent    = `+${ch.xp} SHARDS`;
     ov.classList.add('open');
-    ov.setAttribute('aria-hidden', 'false');
+    ov.setAttribute('aria-hidden','false');
   },
 
   closeFeedback() {
     SFX.play('click');
     const ov = document.getElementById('feedback-overlay');
     ov.classList.remove('open');
-    ov.setAttribute('aria-hidden', 'true');
+    ov.setAttribute('aria-hidden','true');
     STATE.currentStep++;
     this.saveState();
-    if (STATE.currentStep >= CHAPTERS.length) {
-      this.showWin();
-    } else {
-      this.renderChapter();
-      this.rebuildGraph();
-    }
+    if (STATE.currentStep >= CHAPTERS.length) this.showWin();
+    else { this.renderChapter(); this.rebuildGraph(); }
   },
 
   showHint() {
     SFX.play('hint');
     const ch = CHAPTERS[STATE.currentStep];
-    if (STATE.shards < 5) {
-      this.toast('NOT ENOUGH SHARDS (need 5)', 'warn');
-      return;
-    }
+    if (STATE.shards < 5) { this.toast('NOT ENOUGH SHARDS (need 5)', 'warn'); return; }
     STATE.shards -= 5;
     this.updateHeader();
     this.saveState();
-
     const zone = document.getElementById('question-zone');
-    // Remove existing hint
-    const existing = zone.querySelector('.hint-inline');
-    if (existing) existing.remove();
-
+    const ex   = zone.querySelector('.hint-inline');
+    if (ex) ex.remove();
     const hint = document.createElement('div');
-    hint.className = 'hint-inline';
-    hint.setAttribute('role', 'note');
-    hint.setAttribute('aria-live', 'polite');
+    hint.className   = 'hint-inline';
+    hint.setAttribute('role','note');
+    hint.setAttribute('aria-live','polite');
     hint.textContent = '[ORACLE] ' + ch.hint;
     zone.appendChild(hint);
   },
@@ -419,43 +547,72 @@ const GAME = {
     this.saveState();
     this.rebuildGraph();
     this.updateHeader();
-    if (STATE.currentStep >= CHAPTERS.length) {
-      this.showWin();
-    } else {
-      this.renderChapter();
-    }
+    if (STATE.currentStep >= CHAPTERS.length) this.showWin();
+    else this.renderChapter();
   },
 
   openMap() {
     SFX.play('click');
-    const container = document.getElementById('map-chapters');
-    container.innerHTML = CHAPTERS.map((ch, i) => {
-      const done = STATE.completed.includes(ch.id);
+    document.getElementById('map-chapters').innerHTML = CHAPTERS.map((ch, i) => {
+      const done   = STATE.completed.includes(ch.id);
       const active = i === STATE.currentStep;
       const locked = i > STATE.currentStep;
-      let cls = 'map-item';
-      if (done) cls += ' done';
-      else if (active) cls += ' active';
-      else if (locked) cls += ' locked';
-      return `<div class="${cls}">
-        <div class="map-dot"></div>
-        <span>${String(i + 1).padStart(2, '0')}. ${escapeHtml(ch.title)}</span>
-      </div>`;
+      const cls    = 'map-item' + (done ? ' done' : active ? ' active' : locked ? ' locked' : '');
+      return `<div class="${cls}"><div class="map-dot"></div><span>${String(i+1).padStart(2,'0')}. ${escapeHtml(ch.title)}</span></div>`;
     }).join('');
     document.getElementById('map-overlay').classList.add('open');
-    document.getElementById('map-overlay').setAttribute('aria-hidden', 'false');
+    document.getElementById('map-overlay').setAttribute('aria-hidden','false');
   },
 
   closeMap() {
     SFX.play('click');
     document.getElementById('map-overlay').classList.remove('open');
-    document.getElementById('map-overlay').setAttribute('aria-hidden', 'true');
+    document.getElementById('map-overlay').setAttribute('aria-hidden','true');
+  },
+
+  openSettings() {
+    SFX.play('click');
+    this._updateSettingsSound();
+    document.getElementById('settings-reset-confirm').style.display = 'none';
+    document.getElementById('settings-overlay').classList.add('open');
+    document.getElementById('settings-overlay').setAttribute('aria-hidden','false');
+  },
+
+  closeSettings() {
+    SFX.play('click');
+    document.getElementById('settings-overlay').classList.remove('open');
+    document.getElementById('settings-overlay').setAttribute('aria-hidden','true');
+  },
+
+  _updateSettingsSound() {
+    const btn = document.getElementById('settings-sound-toggle');
+    btn.textContent = STATE.soundOn ? 'SOUND: ON' : 'SOUND: OFF';
+    btn.setAttribute('aria-pressed', STATE.soundOn ? 'true' : 'false');
+  },
+
+  _replayPrologue() {
+    this._twId++;
+    PROLOGUE.index = 0;
+    const prologue = document.getElementById('prologue-screen');
+    const game     = document.getElementById('game-screen');
+    prologue.style.opacity    = '1';
+    prologue.style.transition = '';
+    prologue.classList.add('active');
+    game.classList.remove('active');
+    PROLOGUE.init();
+    PROLOGUE.finish = function() {
+      prologue.style.transition = 'opacity 0.8s ease';
+      prologue.style.opacity    = '0';
+      setTimeout(() => { prologue.classList.remove('active'); game.classList.add('active'); }, 800);
+    };
   },
 
   toggleSound() {
-    STATE.soundOn = !STATE.soundOn;
-    SFX.enabled = STATE.soundOn;
-    document.getElementById('sound-btn').textContent = STATE.soundOn ? '&#9834;' : '&#9834;&#x0338;';
+    STATE.soundOn   = !STATE.soundOn;
+    SFX.enabled     = STATE.soundOn;
+    const btn       = document.getElementById('sound-btn');
+    btn.textContent = STATE.soundOn ? 'SFX ON' : 'SFX OFF';
+    btn.setAttribute('aria-pressed', String(STATE.soundOn));
     this.saveState();
     if (STATE.soundOn) SFX.play('click');
   },
@@ -464,16 +621,17 @@ const GAME = {
     SFX.play('win');
     document.getElementById('win-shards').textContent = STATE.shards;
     document.getElementById('win-streak').textContent = STATE.maxStreak;
+    document.getElementById('win-total').textContent  = CHAPTERS.length;
     const ws = document.getElementById('win-screen');
     ws.style.display = 'flex';
-    ws.setAttribute('aria-hidden', 'false');
+    ws.setAttribute('aria-hidden','false');
   },
 
   toast(msg, type = 'info') {
     const t = document.createElement('div');
-    t.className = 'toast';
-    t.setAttribute('role', 'alert');
-    t.setAttribute('aria-live', 'assertive');
+    t.className   = 'toast';
+    t.setAttribute('role','alert');
+    t.setAttribute('aria-live','assertive');
     t.textContent = msg;
     if (type === 'warn') t.style.borderColor = 'var(--red)';
     document.body.appendChild(t);
@@ -484,9 +642,7 @@ const GAME = {
     zone.innerHTML = `
       <div class="terminal-wrap" role="region" aria-label="Terminal input">
         <div class="terminal-bar">
-          <div class="tdot tdot-r"></div>
-          <div class="tdot tdot-y"></div>
-          <div class="tdot tdot-g"></div>
+          <div class="tdot tdot-r"></div><div class="tdot tdot-y"></div><div class="tdot tdot-g"></div>
           <span class="terminal-label">specialist@kethara-archive:~$</span>
         </div>
         <div id="terminal-output" aria-live="polite" aria-label="Terminal output">
@@ -494,19 +650,11 @@ const GAME = {
         </div>
         <div class="terminal-input-row">
           <span class="term-prompt">$ </span>
-          <input
-            type="text"
-            id="user-input"
-            autocomplete="off"
-            spellcheck="false"
-            autocorrect="off"
-            autocapitalize="none"
-            placeholder="type command..."
-            aria-label="Type Git command here"
-          >
+          <input type="text" id="user-input" autocomplete="off" spellcheck="false"
+            autocorrect="off" autocapitalize="none" placeholder="type command..."
+            aria-label="Type Git command here">
         </div>
-      </div>
-    `;
+      </div>`;
     const inp = document.getElementById('user-input');
     inp.focus();
     inp.addEventListener('keypress', (e) => {
@@ -516,7 +664,6 @@ const GAME = {
       if (!val) return;
       this.appendTerminal(`$ ${val}`, 'tl-dim');
       inp.value = '';
-
       if (val.toLowerCase() === ch.command.toLowerCase()) {
         this.appendTerminal('[SUCCESS] Command accepted. Data block crystallised.', 'tl-success');
         inp.disabled = true;
@@ -532,7 +679,7 @@ const GAME = {
     const out = document.getElementById('terminal-output');
     if (!out) return;
     const p = document.createElement('p');
-    p.className = 'tl ' + cls;
+    p.className   = 'tl ' + cls;
     p.textContent = text;
     out.appendChild(p);
     out.scrollTop = out.scrollHeight;
@@ -541,14 +688,13 @@ const GAME = {
   renderBinary(ch, zone) {
     const intro = document.createElement('p');
     intro.style.cssText = 'font-family:var(--font-mono);font-size:13px;color:var(--text-dim);margin-bottom:16px;';
-    intro.textContent = ch.question;
+    intro.textContent   = ch.question;
     zone.appendChild(intro);
-
     const gate = document.createElement('div');
     gate.className = 'binary-gate';
     ch.options.forEach(opt => {
       const btn = document.createElement('button');
-      btn.className = 'gate-btn';
+      btn.className   = 'gate-btn';
       btn.textContent = opt;
       btn.addEventListener('click', () => {
         SFX.play('click');
@@ -572,7 +718,7 @@ const GAME = {
     grid.className = 'choice-grid';
     ch.options.forEach(opt => {
       const btn = document.createElement('button');
-      btn.className = 'choice-btn';
+      btn.className   = 'choice-btn';
       btn.textContent = opt;
       btn.addEventListener('click', () => {
         SFX.play('click');
@@ -594,34 +740,24 @@ const GAME = {
   renderFill(ch, zone) {
     const wrap = document.createElement('div');
     wrap.className = 'fill-wrap';
-
     let html = escapeHtml(ch.template);
     ch.blanks.forEach(() => {
-      html = html.replace('___',
-        `<input class="fill-blank" autocomplete="off" spellcheck="false" autocapitalize="none" aria-label="Fill in the blank">`
-      );
+      html = html.replace('___',`<input class="fill-blank" autocomplete="off" spellcheck="false" autocapitalize="none" aria-label="Fill in the blank">`);
     });
     wrap.innerHTML = html;
     zone.appendChild(wrap);
-
     const btn = document.createElement('button');
-    btn.className = 'fill-submit';
+    btn.className   = 'fill-submit';
     btn.textContent = 'SUBMIT ANSWER';
     zone.appendChild(btn);
-
     const inputs = wrap.querySelectorAll('.fill-blank');
     inputs[0]?.focus();
-
-    inputs.forEach((inp, i) => {
-      const expected = ch.blanks[i] || '';
-      inp.setAttribute('size', Math.max(expected.length + 4, 8));
-    });
-
+    inputs.forEach((inp, i) => inp.setAttribute('size', Math.max((ch.blanks[i]||'').length + 4, 8)));
     const check = () => {
       SFX.play('click');
       let allCorrect = true;
       inputs.forEach((inp, i) => {
-        inp.classList.remove('correct', 'wrong');
+        inp.classList.remove('correct','wrong');
         if (inp.value.trim().toLowerCase() === ch.blanks[i].toLowerCase()) {
           inp.classList.add('correct');
         } else {
@@ -631,67 +767,40 @@ const GAME = {
           setTimeout(() => inp.classList.remove('wrong'), 500);
         }
       });
-      if (allCorrect) {
-        btn.disabled = true;
-        setTimeout(() => this.handleSuccess(ch), 600);
-      }
+      if (allCorrect) { btn.disabled = true; setTimeout(() => this.handleSuccess(ch), 600); }
     };
-
     btn.addEventListener('click', check);
-    inputs.forEach(inp => {
-      inp.addEventListener('keypress', e => { if (e.key === 'Enter') check(); });
-    });
+    inputs.forEach(inp => inp.addEventListener('keypress', e => { if (e.key === 'Enter') check(); }));
   },
 
   renderSort(ch, zone) {
     SORT = { dragging: null, dragEl: null };
-
     const bankLabel = document.createElement('p');
-    bankLabel.className = 'sort-label';
+    bankLabel.className   = 'sort-label';
     bankLabel.textContent = 'AVAILABLE COMMANDS — drag into the correct order below:';
     zone.appendChild(bankLabel);
-
     const bank = document.createElement('div');
     bank.className = 'sort-bank';
-    bank.id = 'sort-bank';
+    bank.id        = 'sort-bank';
     bank.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
-    bank.addEventListener('drop', e => {
-      e.preventDefault();
-      if (SORT.dragEl && SORT.dragEl.parentElement !== bank) {
-        bank.appendChild(SORT.dragEl);
-      }
-    });
-
-    const shuffled = [...ch.items].sort(() => Math.random() - 0.5);
-    shuffled.forEach(item => bank.appendChild(this._makeSortChip(item)));
+    bank.addEventListener('drop', e => { e.preventDefault(); if (SORT.dragEl && SORT.dragEl.parentElement !== bank) bank.appendChild(SORT.dragEl); });
+    [...ch.items].sort(() => Math.random() - 0.5).forEach(item => bank.appendChild(this._makeSortChip(item)));
     zone.appendChild(bank);
-
     const targetLabel = document.createElement('p');
-    targetLabel.className = 'sort-label';
+    targetLabel.className       = 'sort-label';
     targetLabel.style.marginTop = '12px';
-    targetLabel.textContent = 'DROP HERE — in the correct sequence:';
+    targetLabel.textContent     = 'DROP HERE — in the correct sequence:';
     zone.appendChild(targetLabel);
-
     const target = document.createElement('div');
     target.className = 'sort-target';
-    target.id = 'sort-target';
+    target.id        = 'sort-target';
     target.setAttribute('aria-label', 'Drop zone for correct sequence');
-    target.addEventListener('dragover', e => {
-      e.preventDefault();
-      target.classList.add('over');
-      e.dataTransfer.dropEffect = 'move';
-    });
+    target.addEventListener('dragover',  e => { e.preventDefault(); target.classList.add('over'); e.dataTransfer.dropEffect = 'move'; });
     target.addEventListener('dragleave', () => target.classList.remove('over'));
-    target.addEventListener('drop', e => {
-      e.preventDefault();
-      target.classList.remove('over');
-      if (SORT.dragEl) target.appendChild(SORT.dragEl);
-      SFX.play('click');
-    });
+    target.addEventListener('drop',      e => { e.preventDefault(); target.classList.remove('over'); if (SORT.dragEl) target.appendChild(SORT.dragEl); SFX.play('click'); });
     zone.appendChild(target);
-
     const verifyBtn = document.createElement('button');
-    verifyBtn.className = 'sort-verify';
+    verifyBtn.className   = 'sort-verify';
     verifyBtn.textContent = 'VERIFY SEQUENCE';
     verifyBtn.addEventListener('click', () => this.checkSort(ch, target, bank, verifyBtn));
     zone.appendChild(verifyBtn);
@@ -699,33 +808,22 @@ const GAME = {
 
   _makeSortChip(item) {
     const chip = document.createElement('div');
-    chip.className = 'sort-chip';
-    chip.textContent = item;
-    chip.draggable = true;
+    chip.className    = 'sort-chip';
+    chip.textContent  = item;
+    chip.draggable    = true;
     chip.dataset.item = item;
-    chip.setAttribute('role', 'option');
+    chip.setAttribute('role','option');
     chip.setAttribute('aria-label', item);
-    chip.addEventListener('dragstart', e => {
-      SORT.dragEl = chip;
-      SORT.dragging = item;
-      chip.classList.add('drag');
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', item);
-    });
-    chip.addEventListener('dragend', () => chip.classList.remove('drag'));
+    chip.addEventListener('dragstart', e => { SORT.dragEl = chip; chip.classList.add('drag'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', item); });
+    chip.addEventListener('dragend',   () => chip.classList.remove('drag'));
     return chip;
   },
 
   checkSort(ch, target, bank, btn) {
     SFX.play('click');
     const chips = Array.from(target.querySelectorAll('.sort-chip'));
-    if (chips.length !== ch.answer.length) {
-      this.toast('Place ALL commands in the sequence zone first.', 'warn');
-      return;
-    }
-    const userSeq = chips.map(c => c.dataset.item);
-    const correct = ch.answer.every((a, i) => userSeq[i] === a);
-
+    if (chips.length !== ch.answer.length) { this.toast('Place ALL commands in the sequence zone first.', 'warn'); return; }
+    const correct = ch.answer.every((a, i) => chips[i].dataset.item === a);
     if (correct) {
       chips.forEach(c => c.classList.add('correct-chip'));
       SFX.play('success');
@@ -734,53 +832,39 @@ const GAME = {
     } else {
       chips.forEach(c => c.classList.add('wrong-chip'));
       SFX.play('error');
-      setTimeout(() => {
-        chips.forEach(c => {
-          c.classList.remove('wrong-chip');
-          bank.appendChild(c);
-        });
-      }, 800);
+      setTimeout(() => { chips.forEach(c => { c.classList.remove('wrong-chip'); bank.appendChild(c); }); }, 800);
     }
   },
 
   renderMatch(ch, zone) {
     MATCH = { selected: null, col: null, matches: 0 };
-
     const grid = document.createElement('div');
     grid.className = 'match-grid';
-
-    const leftCol = document.createElement('div');
-    const leftLbl = document.createElement('div');
-    leftLbl.className = 'match-col-lbl';
-    leftLbl.textContent = 'COMMANDS';
-    leftCol.appendChild(leftLbl);
-    ch.pairs.forEach((p, i) => {
+    const mkCol = (lbl) => {
+      const col = document.createElement('div');
+      const h   = document.createElement('div');
+      h.className   = 'match-col-lbl';
+      h.textContent = lbl;
+      col.appendChild(h);
+      return col;
+    };
+    const leftCol  = mkCol('COMMANDS');
+    const rightCol = mkCol('DESCRIPTIONS');
+    const mkChip = (text, col, idx) => {
       const chip = document.createElement('div');
-      chip.className = 'match-chip';
-      chip.textContent = p.left;
-      chip.dataset.col = 'left';
-      chip.dataset.idx = i;
-      chip.dataset.val = p.left;
-      chip.addEventListener('click', () => this.handleMatch(chip, ch));
-      leftCol.appendChild(chip);
-    });
-
-    const rightCol = document.createElement('div');
-    const rightLbl = document.createElement('div');
-    rightLbl.className = 'match-col-lbl';
-    rightLbl.textContent = 'DESCRIPTIONS';
-    rightCol.appendChild(rightLbl);
-    const shuffledRight = [...ch.pairs.map(p => p.right)].sort(() => Math.random() - 0.5);
-    shuffledRight.forEach((r) => {
-      const chip = document.createElement('div');
-      chip.className = 'match-chip';
-      chip.textContent = r;
-      chip.dataset.col = 'right';
-      chip.dataset.val = r;
-      chip.addEventListener('click', () => this.handleMatch(chip, ch));
-      rightCol.appendChild(chip);
-    });
-
+      chip.className   = 'match-chip';
+      chip.textContent = text;
+      chip.dataset.col = col;
+      chip.dataset.val = text;
+      if (idx !== undefined) chip.dataset.idx = idx;
+      chip.setAttribute('role','button');
+      chip.setAttribute('tabindex','0');
+      chip.addEventListener('click',    () => this.handleMatch(chip, ch));
+      chip.addEventListener('keypress', e => { if (e.key === 'Enter') this.handleMatch(chip, ch); });
+      return chip;
+    };
+    ch.pairs.forEach((p, i) => leftCol.appendChild(mkChip(p.left, 'left', i)));
+    [...ch.pairs.map(p => p.right)].sort(() => Math.random() - 0.5).forEach(r => rightCol.appendChild(mkChip(r, 'right')));
     grid.appendChild(leftCol);
     grid.appendChild(rightCol);
     zone.appendChild(grid);
@@ -789,88 +873,58 @@ const GAME = {
   handleMatch(el, ch) {
     if (el.classList.contains('matched')) return;
     SFX.play('click');
-
     if (!MATCH.selected) {
-      MATCH.selected = el;
-      MATCH.col = el.dataset.col;
-      el.classList.add('sel');
+      MATCH.selected = el; MATCH.col = el.dataset.col; el.classList.add('sel');
     } else {
       if (MATCH.col === el.dataset.col) {
         MATCH.selected.classList.remove('sel');
-        MATCH.selected = el;
-        MATCH.col = el.dataset.col;
-        el.classList.add('sel');
+        MATCH.selected = el; MATCH.col = el.dataset.col; el.classList.add('sel');
         return;
       }
-
       const leftEl  = MATCH.col === 'left'  ? MATCH.selected : el;
       const rightEl = MATCH.col === 'right' ? MATCH.selected : el;
-
-      const isCorrect = ch.pairs.some(p =>
-        p.left === leftEl.dataset.val && p.right === rightEl.dataset.val
-      );
-
+      const ok      = ch.pairs.some(p => p.left === leftEl.dataset.val && p.right === rightEl.dataset.val);
       MATCH.selected.classList.remove('sel');
-
-      if (isCorrect) {
-        leftEl.classList.add('matched');
-        rightEl.classList.add('matched');
+      if (ok) {
+        leftEl.classList.add('matched'); rightEl.classList.add('matched');
         SFX.play('coin');
         MATCH.matches++;
-        if (MATCH.matches === ch.pairs.length) {
-          setTimeout(() => this.handleSuccess(ch), 500);
-        }
+        if (MATCH.matches === ch.pairs.length) setTimeout(() => this.handleSuccess(ch), 500);
       } else {
-        leftEl.classList.add('wrong');
-        rightEl.classList.add('wrong');
+        leftEl.classList.add('wrong'); rightEl.classList.add('wrong');
         SFX.play('error');
-        setTimeout(() => {
-          leftEl.classList.remove('wrong');
-          rightEl.classList.remove('wrong');
-        }, 500);
+        setTimeout(() => { leftEl.classList.remove('wrong'); rightEl.classList.remove('wrong'); }, 500);
       }
-
-      MATCH.selected = null;
-      MATCH.col = null;
+      MATCH.selected = null; MATCH.col = null;
     }
   },
 
   renderConflict(ch, zone) {
     const intro = document.createElement('p');
     intro.style.cssText = 'font-family:var(--font-mono);font-size:12px;color:var(--text-dim);margin-bottom:8px;';
-    intro.textContent = 'Click ALL lines that are Git conflict markers:';
+    intro.textContent   = 'Click ALL lines that are Git conflict markers:';
     zone.appendChild(intro);
-
     const file = document.createElement('div');
     file.className = 'conflict-file';
-
     ch.lines.forEach((line, i) => {
-      const row = document.createElement('div');
+      const row  = document.createElement('div');
       row.className = 'cf-line';
-      row.dataset.idx = i;
       row.dataset.marker = line.isMarker ? '1' : '0';
-
-      const num = document.createElement('span');
-      num.className = 'cf-num';
-      num.textContent = i + 1;
-      num.setAttribute('aria-hidden', 'true');
-
+      row.setAttribute('role','checkbox');
+      row.setAttribute('aria-checked','false');
+      row.setAttribute('tabindex','0');
+      const num  = document.createElement('span');
+      num.className = 'cf-num'; num.textContent = i + 1; num.setAttribute('aria-hidden','true');
       const code = document.createElement('span');
       code.textContent = line.text;
-
-      row.appendChild(num);
-      row.appendChild(code);
-      row.addEventListener('click', () => {
-        SFX.play('click');
-        row.classList.toggle('sel');
-      });
+      row.appendChild(num); row.appendChild(code);
+      row.addEventListener('click', () => { SFX.play('click'); const c = row.classList.toggle('sel'); row.setAttribute('aria-checked', c ? 'true' : 'false'); });
+      row.addEventListener('keypress', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); row.click(); } });
       file.appendChild(row);
     });
-
     zone.appendChild(file);
-
     const checkBtn = document.createElement('button');
-    checkBtn.className = 'conflict-check';
+    checkBtn.className   = 'conflict-check';
     checkBtn.textContent = 'IDENTIFY MARKERS';
     checkBtn.addEventListener('click', () => this.checkConflict(ch, file, checkBtn));
     zone.appendChild(checkBtn);
@@ -880,42 +934,203 @@ const GAME = {
     SFX.play('click');
     const rows = file.querySelectorAll('.cf-line');
     let allCorrect = true;
-
     rows.forEach((row, i) => {
       const isMarker = ch.lines[i].isMarker;
       const selected = row.classList.contains('sel');
       row.classList.remove('sel');
-
-      if (isMarker && selected) {
-        row.classList.add('hit-good');
-      } else if (!isMarker && selected) {
-        row.classList.add('hit-bad');
-        allCorrect = false;
-      } else if (isMarker && !selected) {
-        allCorrect = false;
-      }
+      if (isMarker && selected)        row.classList.add('hit-good');
+      else if (!isMarker && selected) { row.classList.add('hit-bad'); allCorrect = false; }
+      else if (isMarker && !selected)   allCorrect = false;
     });
-
     if (allCorrect) {
-      SFX.play('success');
-      btn.disabled = true;
+      SFX.play('success'); btn.disabled = true;
       setTimeout(() => this.handleSuccess(CHAPTERS[STATE.currentStep]), 700);
     } else {
       SFX.play('error');
-      setTimeout(() => {
-        rows.forEach(r => r.classList.remove('hit-good', 'hit-bad'));
-      }, 1000);
+      setTimeout(() => rows.forEach(r => r.classList.remove('hit-good','hit-bad')), 1000);
     }
-  }
+  },
 
+  renderHotspot(ch, zone) {
+    const intro = document.createElement('p');
+    intro.className   = 'hotspot-intro';
+    intro.textContent = 'Tap the correct token in the command:';
+    zone.appendChild(intro);
+    const row = document.createElement('div');
+    row.className = 'hotspot-row';
+    ch.tokens.forEach(tok => {
+      const btn = document.createElement('button');
+      btn.className   = 'hotspot-token';
+      btn.textContent = tok;
+      btn.addEventListener('click', () => {
+        SFX.play('click');
+        row.querySelectorAll('.hotspot-token').forEach(b => b.classList.remove('sel'));
+        if (tok === ch.answer) {
+          btn.classList.add('correct');
+          row.querySelectorAll('.hotspot-token').forEach(b => b.disabled = true);
+          setTimeout(() => this.handleSuccess(ch), 700);
+        } else {
+          btn.classList.add('wrong');
+          SFX.play('error');
+          setTimeout(() => btn.classList.remove('wrong'), 500);
+        }
+      });
+      row.appendChild(btn);
+    });
+    zone.appendChild(row);
+  },
+
+  renderOutputRead(ch, zone) {
+    const pre = document.createElement('pre');
+    pre.className   = 'output-read-pre';
+    pre.textContent = ch.output;
+    zone.appendChild(pre);
+    const q = document.createElement('p');
+    q.className   = 'output-read-question';
+    q.textContent = ch.question;
+    zone.appendChild(q);
+    const grid = document.createElement('div');
+    grid.className = 'choice-grid';
+    ch.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className   = 'choice-btn';
+      btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        SFX.play('click');
+        if (opt === ch.answer) {
+          btn.classList.add('correct');
+          grid.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+          setTimeout(() => this.handleSuccess(ch), 600);
+        } else {
+          btn.classList.add('wrong');
+          SFX.play('error');
+          setTimeout(() => btn.classList.remove('wrong'), 500);
+        }
+      });
+      grid.appendChild(btn);
+    });
+    zone.appendChild(grid);
+  },
+
+  renderTrueFalseSet(ch, zone) {
+    const intro = document.createElement('p');
+    intro.className   = 'tf-intro';
+    intro.textContent = 'Mark each statement as TRUE or FALSE:';
+    zone.appendChild(intro);
+    const answers = [];
+    const rows    = [];
+    ch.statements.forEach((stmt, i) => {
+      answers.push(null);
+      const row = document.createElement('div');
+      row.className = 'tf-row';
+      const text = document.createElement('div');
+      text.className = 'tf-text'; text.textContent = stmt.text;
+      row.appendChild(text);
+      const btnGroup = document.createElement('div');
+      btnGroup.className = 'tf-btns';
+      ['TRUE','FALSE'].forEach(label => {
+        const btn = document.createElement('button');
+        btn.className   = 'tf-btn';
+        btn.textContent = label;
+        btn.addEventListener('click', () => {
+          SFX.play('click');
+          btnGroup.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          answers[i] = (label === 'TRUE');
+        });
+        btnGroup.appendChild(btn);
+      });
+      row.appendChild(btnGroup);
+      zone.appendChild(row);
+      rows.push(row);
+    });
+    const submitBtn = document.createElement('button');
+    submitBtn.className   = 'sort-verify';
+    submitBtn.textContent = 'SUBMIT ALL ANSWERS';
+    submitBtn.addEventListener('click', () => {
+      SFX.play('click');
+      if (answers.some(a => a === null)) { this.toast('Answer all statements before submitting.', 'warn'); return; }
+      let allCorrect = true;
+      ch.statements.forEach((stmt, i) => {
+        rows[i].querySelectorAll('.tf-btn').forEach(b => b.disabled = true);
+        if (answers[i] === stmt.answer) rows[i].classList.add('tf-correct');
+        else { rows[i].classList.add('tf-wrong'); allCorrect = false; }
+      });
+      if (allCorrect) {
+        submitBtn.disabled = true;
+        setTimeout(() => this.handleSuccess(ch), 800);
+      } else {
+        SFX.play('error');
+        setTimeout(() => {
+          rows.forEach(r => r.classList.remove('tf-correct','tf-wrong'));
+          rows.forEach(r => r.querySelectorAll('.tf-btn').forEach(b => { b.disabled = false; b.classList.remove('selected'); }));
+          answers.fill(null);
+        }, 1000);
+      }
+    });
+    zone.appendChild(submitBtn);
+  },
+
+  renderSequence(ch, zone) {
+    let currentStep = 0;
+    const buildStep = (stepIndex) => {
+      zone.innerHTML = '';
+      const stepObj  = ch.steps[stepIndex];
+      const progress = document.createElement('div');
+      progress.className = 'seq-progress';
+      ch.steps.forEach((s, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'seq-dot' + (i < stepIndex ? ' done' : i === stepIndex ? ' active' : '');
+        dot.title = s.label;
+        progress.appendChild(dot);
+      });
+      zone.appendChild(progress);
+      const label = document.createElement('p');
+      label.className   = 'seq-prompt';
+      label.textContent = stepObj.prompt;
+      zone.appendChild(label);
+      zone.innerHTML += `
+        <div class="terminal-wrap" role="region" aria-label="Sequence terminal">
+          <div class="terminal-bar">
+            <div class="tdot tdot-r"></div><div class="tdot tdot-y"></div><div class="tdot tdot-g"></div>
+            <span class="terminal-label">specialist@kethara-archive:~$</span>
+          </div>
+          <div id="terminal-output" aria-live="polite">
+            <p class="tl tl-dim">[SYSTEM] Step ${stepIndex + 1} of ${ch.steps.length} ready.</p>
+          </div>
+          <div class="terminal-input-row">
+            <span class="term-prompt">$ </span>
+            <input type="text" id="user-input" autocomplete="off" spellcheck="false"
+              autocapitalize="none" placeholder="type command..." aria-label="Type Git command here">
+          </div>
+        </div>`;
+      const inp = document.getElementById('user-input');
+      inp.focus();
+      inp.addEventListener('keypress', (e) => {
+        if (e.key !== 'Enter') return;
+        SFX.play('click');
+        const val = inp.value.trim();
+        if (!val) return;
+        this.appendTerminal(`$ ${val}`, 'tl-dim');
+        inp.value = '';
+        if (val.toLowerCase() === stepObj.command.toLowerCase()) {
+          this.appendTerminal(`[OK] ${stepObj.label} complete.`, 'tl-success');
+          inp.disabled = true;
+          currentStep++;
+          if (currentStep >= ch.steps.length) setTimeout(() => this.handleSuccess(ch), 800);
+          else setTimeout(() => buildStep(currentStep), 900);
+        } else {
+          this.appendTerminal(`[ERROR] "${val}" not recognised. Try again.`, 'tl-error');
+          SFX.play('error');
+        }
+      });
+    };
+    buildStep(0);
+  }
 };
 
 function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 document.addEventListener('DOMContentLoaded', () => GAME.init());
