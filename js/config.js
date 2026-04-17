@@ -1,0 +1,987 @@
+const GAME_CONFIG = {
+
+  name:        "GitGud",
+  tagline:     "An Archaeological Expedition",
+  description: "Master Git version control through story-driven discovery.",
+  terminalPrompt: "specialist@kethara-archive:~$",
+
+  winTitle:   "REPOSITORY RESTORED",
+  winMessage: "You have traversed time itself. From dust and stone to pure light, the Chronicle lives again.",
+
+  eras: {
+    "era-0": {
+      label: "THE ANCIENT ARCHIVE",
+      cssClass: "",
+      vars: {
+        "--bg":           "#f5edd6",
+        "--bg2":          "#ede4c8",
+        "--surface":      "#faf4e4",
+        "--surface2":     "#f0e8ce",
+        "--surface3":     "#e8debb",
+        "--border":       "#c8a96e",
+        "--border2":      "#b08848",
+        "--text":         "#3a2810",
+        "--text-dim":     "#7a5c32",
+        "--text-bright":  "#1a1005",
+        "--text-faint":   "#c0a070",
+        "--accent":       "#b5722a",
+        "--accent-dim":   "#f0e0c0",
+        "--accent2":      "#8b5a14",
+        "--gold":         "#c8960c",
+        "--gold-dim":     "#f8ecc0",
+        "--green":        "#4a7840",
+        "--green-dim":    "#d8e8d0",
+        "--red":          "#a03020",
+        "--red-dim":      "#f0d0c8",
+        "--teal":         "#3a7868",
+        "--teal-dim":     "#cce8e0",
+        "--font-display": "'Cinzel', serif",
+        "--font-body":    "'Crimson Pro', Georgia, serif",
+        "--font-mono":    "'Courier Prime', 'Courier New', monospace",
+        "--font-ui":      "'Rajdhani', sans-serif",
+      }
+    },
+    "era-1": {
+      label: "THE AWAKENED CODEX",
+      cssClass: "era-1",
+      vars: {
+        "--bg":           "#060d0e",
+        "--bg2":          "#081212",
+        "--surface":      "#0c1a1c",
+        "--surface2":     "#102224",
+        "--surface3":     "#142c2e",
+        "--border":       "#1e4a4e",
+        "--border2":      "#286468",
+        "--text":         "#9ecfcc",
+        "--text-dim":     "#4a8a86",
+        "--text-bright":  "#d4f0ee",
+        "--text-faint":   "#1e4a4e",
+        "--accent":       "#3ab8b0",
+        "--accent-dim":   "#082422",
+        "--accent2":      "#c9a227",
+        "--gold":         "#d4aa30",
+        "--gold-dim":     "#2a2008",
+        "--green":        "#5ab888",
+        "--green-dim":    "#0a2018",
+        "--red":          "#c84040",
+        "--red-dim":      "#2a0808",
+        "--teal":         "#3ab8b0",
+        "--teal-dim":     "#082422",
+        "--font-display": "'Rajdhani', 'Cinzel', sans-serif",
+        "--font-body":    "'Rajdhani', sans-serif",
+        "--font-mono":    "'Share Tech Mono', 'Courier Prime', monospace",
+        "--font-ui":      "'Rajdhani', sans-serif",
+      }
+    },
+    "era-2": {
+      label: "THE NEXUS TERMINAL",
+      cssClass: "era-2",
+      vars: {
+        "--bg":           "#050508",
+        "--bg2":          "#08080e",
+        "--surface":      "#0c0c16",
+        "--surface2":     "#121220",
+        "--surface3":     "#1a1a2e",
+        "--border":       "#1e1e3a",
+        "--border2":      "#2a2a4a",
+        "--text":         "#c8c8e8",
+        "--text-dim":     "#5a5a7a",
+        "--text-bright":  "#e8e8ff",
+        "--text-faint":   "#1e1e3a",
+        "--accent":       "#00d4ff",
+        "--accent-dim":   "#004455",
+        "--accent2":      "#aa55ff",
+        "--gold":         "#ffaa00",
+        "--gold-dim":     "#332200",
+        "--green":        "#00ff88",
+        "--green-dim":    "#003322",
+        "--red":          "#ff3355",
+        "--red-dim":      "#330011",
+        "--teal":         "#00d4ff",
+        "--teal-dim":     "#004455",
+        "--font-display": "'Orbitron', 'Share Tech Mono', monospace",
+        "--font-body":    "'Rajdhani', sans-serif",
+        "--font-mono":    "'Share Tech Mono', monospace",
+        "--font-ui":      "'Rajdhani', sans-serif",
+      }
+    }
+  },
+
+  fonts: "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap",
+
+  prologueSlides: [
+    `The year is unknown. The expedition team spent six months digging at the Kethara Plateau before they found it. It was buried under forty feet of stone and sand. This structure is different from anything on record. It is not a tomb. It is not a temple. It is a machine room.
+
+The walls are covered in inscriptions. These are not symbols of gods or kings. They are something much stranger. You see sequences. You see patterns. You see commands.`,
+
+    `The team linguist cracked the first glyph on day three. The inscription reads "git init". An hour later they found a second one: "git commit". By nightfall the walls were speaking a language you recognize.
+
+It is version control. An ancient civilization built the entire science of version control. They did not use computers. They carved it into stone. Then they vanished and took their knowledge with them.`,
+
+    `The machine room connects to a vast underground network called the Kethara Repository. There are thousands of data chambers here. Each one holds a fragment of their accumulated knowledge. But the Repository is corrupted. Sectors are dark. Branches are broken. The commit log ends in the middle of a sentence from 3,000 years ago.
+
+Something interrupted the Archive before it could be sealed.`,
+
+    `Your mission is clear. You must reactivate the Repository sector by sector. You need to recover the knowledge and rebuild the commit history. You have to find out what happened to the civilization that built this place.
+
+You are not just learning their system. You are following their footsteps. You are a Ledger Specialist now. Every command you type brings a dead world back to life.`,
+
+    `You power on your terminal and connect it to the ancient interface. The screen flickers once. Then a single line appears:
+
+                    repository: KETHARA-ARCHIVE
+                    status: CORRUPTED
+                    chapters recovered: 0 / 56
+                    
+                    awaiting specialist input...
+
+Take a breath. The expedition begins now.`
+  ],
+
+  arcs: {
+    1: { name: "ARC I: THE AWAKENING",       label: "ARC I",   era: "era-0", icon: "&#9670;" },
+    2: { name: "ARC II: PARALLEL HISTORIES", label: "ARC II",  era: "era-0", icon: "&#9670;" },
+    3: { name: "ARC III: THE CONVERGENCE",   label: "ARC III", era: "era-1", icon: "&#9632;" },
+    4: { name: "ARC IV: CRISIS PROTOCOL",    label: "ARC IV",  era: "era-1", icon: "&#9632;" },
+    5: { name: "ARC V: THE DIGITAL ASCENT",  label: "ARC V",   era: "era-2", icon: "&#9670;" },
+    6: { name: "ARC VI: DEEP PROTOCOLS",     label: "ARC VI",  era: "era-2", icon: "&#9670;" },
+  },
+
+  chapters: [
+
+    /* ARC I: THE AWAKENING */
+
+    {
+      id: 0, arc: 1, nodeType: "normal",
+      title: "The First Inscription",
+      story: "The entrance to the chamber is silent and the air is heavy with dust. We set up our equipment on a stone slab while torchlight reflects off the walls. There are carvings everywhere, but the system is currently dormant. Our team's linguist identified two specific words near the entrance. She explained that before the archive can record any new data, we have to initialize the system to begin tracking.",
+      task: "Initialize the repository to begin tracking.",
+      xp: 10, qType: "terminal", command: "git init",
+      hint: "Two words. 'git' followed by a word meaning 'to start' or 'initiate'.",
+      explanation: "git init creates a hidden folder called .git inside your project directory. This folder is the brain of your version control system. It tracks every change, every commit, and every branch from this point forward. You only need to run it once per project. Without it, Git doesn't know your folder even exists.",
+      example: "$ git init\nInitialized empty Git repository in /project/.git/",
+      fieldNote: { cmd: "git init", desc: "Wake the repository. Run once per project." }
+    },
+
+    {
+      id: 1, arc: 1, nodeType: "normal",
+      title: "The Observer's Rite",
+      story: "The system is active now, though the chamber remains dark. Files are scattered across the workspace, including new documents and others that were modified recently. We have to follow a strict rule inscribed above the entrance: always check the state of the archive before taking action. Acting without checking first could lead to overwriting important history.",
+      task: "Check the current status of the repository.",
+      xp: 10, qType: "terminal", command: "git status",
+      hint: "Two words. 'git' followed by a word describing the current state.",
+      explanation: "git status is the most frequently used command. It shows you which files are untracked, modified, or staged and ready for a commit. Checking your status regularly helps prevent mistakes.",
+      example: "$ git status\nOn branch main\nUntracked files:\n  history.txt",
+      fieldNote: { cmd: "git status", desc: "Check the current state of files." }
+    },
+
+    {
+      id: 2, arc: 1, nodeType: "normal",
+      title: "Staging the Fragment",
+      story: "In the second room, we found a clay tablet labeled \"history.txt\" that is warm to the touch. It contains data that the system has not captured yet. The interface does not automatically save every change we make. Instead, we must manually select which fragments to preserve. This process allows us to be intentional about what enters the permanent record.",
+      task: "Add the file 'history.txt' to the staging area.",
+      xp: 10, qType: "fill",
+      template: "git ___ history.txt", blanks: ["add"],
+      hint: "The blank is a three-letter word meaning 'to include' or 'to place into'.",
+      explanation: "git add moves a file into the staging area. Think of the staging area as a preparation zone where you decide exactly what goes into the next commit. This extra step gives you total control over your project's timeline.",
+      example: "$ git add history.txt\n# No output means success.\n# Check with: git status",
+      fieldNote: { cmd: "git add <file>", desc: "Stage a specific file for the next commit." }
+    },
+
+    {
+      id: 3, arc: 1, nodeType: "normal",
+      title: "The First Snapshot",
+      story: "The tablet is staged and ready for the system. Our lead researcher explains that committing a change makes it a permanent part of the timeline. Every saved fragment receives a timestamp and a message explaining why it was preserved. The creators of this place were very clear that every entry must have a stated purpose.",
+      task: "Commit the staged changes with the message 'Recovered fragment'.",
+      xp: 10, qType: "terminal", command: `git commit -m "Recovered fragment"`,
+      hint: "Use 'git commit' with the -m flag, then the message in quotes.",
+      explanation: "git commit creates a permanent snapshot of your staged changes. The -m flag allows you to add a descriptive message. These commits are the building blocks that form the entire history of the repository.",
+      example: "$ git commit -m \"Recovered fragment\"\n[main (root-commit) a4f3b2e] Recovered fragment\n 1 file changed, 12 insertions(+)",
+      fieldNote: { cmd: `git commit -m "msg"`, desc: "Snapshot staged changes permanently." }
+    },
+
+    {
+      id: 4, arc: 1, nodeType: "normal",
+      title: "Stage Everything",
+      story: "A new door opens to reveal twelve tablets glowing simultaneously. Manually processing each one would be inefficient. Fortunately, the system includes a shorthand command to stage every modified and new file in the directory at once. This allows us to move much deeper into the archive without wasting time.",
+      task: "Stage ALL files in the current directory at once.",
+      xp: 10, qType: "choice",
+      options: ["git add --all", "git add .", "git add *", "git add -a"],
+      answer: "git add .",
+      hint: "A single dot represents the current directory in Unix systems.",
+      explanation: "git add . is the standard way to stage all new and modified files in your current folder and its subfolders. It is the fastest way to prepare your work before a commit.",
+      example: "$ git add .\n# Stages everything in current directory.\n# Then:\n$ git commit -m \"Stage all recovered tablets\"",
+      fieldNote: { cmd: "git add .", desc: "Stage ALL changes in current directory." }
+    },
+
+    {
+      id: 5, arc: 1, nodeType: "normal",
+      title: "Reading the Chronicle",
+      story: "Deep in the archive room, we found a wall that functions as a complete history of the chamber. Every action taken here is recorded with a date, a name, and a specific reason. The ancient builders referred to this as the Chronicle. A prominent inscription at the top suggests that understanding the past is the only way to navigate the future effectively.",
+      task: "View the complete commit history of this repository.",
+      xp: 10, qType: "terminal", command: "git log",
+      hint: "Think: a written record of events. A ship's ___.",
+      explanation: "git log displays all commits in reverse chronological order. Each entry shows the unique commit hash, the author, the date, and the message. This command is essential for reviewing the timeline of your project.",
+      example: "$ git log\ncommit a4f3b2e\nAuthor: You <you@dig.site>\nDate:   Mon Jan 1 09:00:00\n\n    Recovered fragment\n\n$ git log --oneline\na4f3b2e Recovered fragment",
+      fieldNote: { cmd: "git log", desc: "Read the Chronicle. All past commits." }
+    },
+
+    {
+      id: 6, arc: 1, nodeType: "normal",
+      title: "The Compact View",
+      story: "The Chronicle wall is massive and contains thousands of entries. Reading every detail would take far too long, but Lena found a symbol in the corner that reveals a compact version of the record. It displays only one line per entry. The architects clearly designed the system for efficiency when scanning through long periods of history.",
+      task: "Which flags produce a compact, one-line-per-commit log?",
+      xp: 10, qType: "binary",
+      question: "Which command shows the commit log in compact form?",
+      options: ["git log --oneline", "git log --short"],
+      answer: "git log --oneline",
+      hint: "--oneline = one line per commit. Simple.",
+      explanation: "git log --oneline shows each commit with just its short hash and message. This is the most useful way to get a quick overview of your project's progress without cluttering the screen.",
+      example: "$ git log --oneline\na4f3b2e Recovered fragment\n3c9d1aa Initialize repository",
+      fieldNote: { cmd: "git log --oneline", desc: "Compact history. One line per commit." }
+    },
+
+    /* ARC II: PARALLEL HISTORIES */
+
+    {
+      id: 7, arc: 2, nodeType: "branch",
+      title: "The Fork in the Stone",
+      story: "The passage ahead splits into two tunnels. The eastern tunnel is the stable primary archive, while the western tunnel is marked as an experimental branch. Our team geologist noted that the builders did not work in a single linear sequence. Instead, they created parallel copies of the record to experiment without risking the main archive. We need to create a branch of our own to proceed.",
+      task: "Create a new branch called 'excavation'.",
+      xp: 15, qType: "terminal", command: "git branch excavation",
+      hint: "Two words: 'git branch' followed by the name of the new branch.",
+      explanation: "git branch <name> creates a new pointer at your current commit. It is important to remember that this command does not switch you to the new branch. It simply marks a new path in the timeline.",
+      example: "$ git branch excavation\n# No output = success.\n\n# To see all branches:\n$ git branch\n* main\n  excavation",
+      fieldNote: { cmd: "git branch <name>", desc: "Create a new branch. Doesn't switch." }
+    },
+
+    {
+      id: 8, arc: 2, nodeType: "branch",
+      title: "Stepping Through",
+      story: "The western tunnel is now visible in the system map, but we are still standing in the main corridor. Creating a branch and entering it are distinct actions. An inscription above the doorway reminds us that to walk a parallel path, we must consciously step away from the main timeline.",
+      task: "Switch to the 'excavation' branch.",
+      xp: 10, qType: "binary",
+      question: "Which command switches to the 'excavation' branch?",
+      options: ["git checkout excavation", "git branch switch excavation"],
+      answer: "git checkout excavation",
+      hint: "The classic command for switching branches uses a word meaning 'to inspect' or 'to retrieve'.",
+      explanation: "git checkout <branch> updates your working directory to match the state of the selected branch. You can think of it as physically moving your workspace from one timeline to another.",
+      example: "$ git checkout excavation\nSwitched to branch 'excavation'\n\n# Modern equivalent:\n$ git switch excavation",
+      fieldNote: { cmd: "git checkout <branch>", desc: "Switch to an existing branch." }
+    },
+
+    {
+      id: 9, arc: 2, nodeType: "branch",
+      title: "One Motion",
+      story: "We have been creating and switching branches frequently today. Lena noticed a shorthand command carved into the floor that allows us to perform both actions in a single move. The original specialists seem to have valued speed and reduced repetitive steps whenever possible.",
+      task: "Create AND switch to a new branch called 'deep-scan' in one command.",
+      xp: 10, qType: "fill",
+      template: "git checkout ___ deep-scan", blanks: ["-b"],
+      hint: "A single flag. The letter 'b' stands for 'branch'.",
+      explanation: "git checkout -b <name> is a very common shortcut that creates a branch and switches to it immediately. This is much faster than running the 'branch' and 'checkout' commands separately.",
+      example: "$ git checkout -b deep-scan\nSwitched to a new branch 'deep-scan'",
+      fieldNote: { cmd: "git checkout -b <name>", desc: "Create + switch in one move." }
+    },
+
+    {
+      id: 10, arc: 2, nodeType: "normal",
+      title: "The Name Convention",
+      story: "Our team found a master index that lists every branch known to this sector. Interestingly, the primary branch has two different names carved from different time periods. An older inscription uses the term \"master,\" while a newer one uses \"main.\" Our historian believes this represents a shift in standard conventions that occurred late in the civilization's history.",
+      task: "What is the modern default branch name in Git?",
+      xp: 10, qType: "binary",
+      question: "Modern Git default branch name:",
+      options: ["main", "master"],
+      answer: "main",
+      hint: "GitHub changed the default in October 2020.",
+      explanation: "While older repositories still use 'master', 'main' is now the standard default for new projects on most platforms. Both are just labels, but 'main' is the convention used in modern development.",
+      example: "# Rename master to main:\n$ git branch -m master main",
+      fieldNote: { cmd: "main vs master", desc: "Modern default is 'main'. Older repos use 'master'." }
+    },
+
+    {
+      id: 11, arc: 2, nodeType: "normal",
+      title: "The Correct Sequence",
+      story: "We have entered a training chamber where the walls display the fundamental sequence of operations. This three step process is something every Ledger Specialist must master before moving deeper into the Archive. Currently, the carvings are scrambled as a test for anyone who enters.",
+      task: "Arrange the Git workflow steps in the correct order.",
+      xp: 15, qType: "sort",
+      items: ["git push", "git add .", "git commit -m 'msg'"],
+      answer: ["git add .", "git commit -m 'msg'", "git push"],
+      hint: "Stage first, snapshot second, send to remote last.",
+      explanation: "The core Git workflow always follows this pattern: (1) git add to stage your changes, (2) git commit to save a permanent snapshot, and (3) git push to send those commits to the remote server.",
+      example: "$ git add .\n$ git commit -m \"Add recovery data\"\n$ git push origin main",
+      fieldNote: { cmd: "add -> commit -> push", desc: "The fundamental sequence. Always in this order." }
+    },
+
+    {
+      id: 12, arc: 2, nodeType: "normal",
+      title: "Branch Inventory",
+      story: "We are now deep within the branch network and it is easy to get lost in these parallel corridors. The Repository contains dozens of branches, including some that are active and others that date back centuries. To navigate successfully, we need a map of the entire system.",
+      task: "List ALL branches, including remote-tracking ones.",
+      xp: 10, qType: "choice",
+      options: ["git branch -a", "git branch --list", "git log --branches", "git branch -all"],
+      answer: "git branch -a",
+      hint: "The flag -a stands for 'all'. Not '--all', just '-a'.",
+      explanation: "The standard git branch command only shows local branches. By adding the -a flag, you can see every branch available, including remote-tracking branches like origin/main.",
+      example: "$ git branch -a\n* excavation\n  main\n  remotes/origin/main",
+      fieldNote: { cmd: "git branch -a", desc: "List ALL branches, local + remote." }
+    },
+
+    /* ARC III: THE CONVERGENCE */
+
+    {
+      id: 13, arc: 3, nodeType: "normal",
+      title: "The Central Nexus",
+      story: "The tunnels eventually lead into a vast central chamber known as the Nexus. Here, the stone walls are embedded with pulsing circuits and teal light. This area serves as the ancient remote server for the civilization. To move forward, we must identify our connection to this machine.",
+      task: "List all remote connections and their URLs.",
+      xp: 10, qType: "fill",
+      template: "git remote ___", blanks: ["-v"],
+      hint: "The flag means 'verbose' — show more detail.",
+      explanation: "git remote -v lists all configured remote connections along with their specific URLs. This allows you to verify where your code is being sent when you push or where it is coming from when you fetch.",
+      example: "$ git remote -v\norigin  https://github.com/you/repo.git (fetch)\norigin  https://github.com/you/repo.git (push)",
+      fieldNote: { cmd: "git remote -v", desc: "See all remote connections + their URLs." }
+    },
+
+    {
+      id: 14, arc: 3, nodeType: "normal",
+      title: "Downloading Without Merging",
+      story: "The Nexus contains data from other teams who have been working on the Archive. Before we integrate their work into our own timeline, we need to download their progress and review it. Our lead researcher suggests a cautious approach: receive the data from the remote without immediately merging it.",
+      task: "Download remote changes without merging them.",
+      xp: 10, qType: "binary",
+      question: "Which command downloads remote changes WITHOUT merging?",
+      options: ["git fetch", "git pull"],
+      answer: "git fetch",
+      hint: "Fetch brings the data. Pull brings AND integrates.",
+      explanation: "git fetch downloads the latest changes from the remote repository but does not change your local files. This allows you to inspect what others have done before you decide to merge their work into your own.",
+      example: "$ git fetch origin\nFrom https://github.com/you/repo\n   a4f3b2e..c7d9f11  main -> origin/main",
+      fieldNote: { cmd: "git fetch", desc: "Download remote changes. Don't merge yet." }
+    },
+
+    {
+      id: 15, arc: 3, nodeType: "normal",
+      title: "Integrating the Data",
+      story: "After reviewing the downloaded data, our team has decided it is safe to integrate. We are now ready to perform a full integration using a command that both fetches and merges the remote information in a single motion.",
+      task: "Fetch AND merge the remote 'main' branch into your current branch.",
+      xp: 10, qType: "terminal", command: "git pull origin main",
+      hint: "Pull, then the remote name, then the branch name.",
+      explanation: "git pull is a combination of fetch and merge. It brings down the remote data and immediately integrates it into your current branch. It is a good habit to pull frequently to stay in sync with your team.",
+      example: "$ git pull origin main\nUpdating a4f3b2e..c7d9f11",
+      fieldNote: { cmd: "git pull", desc: "Fetch + merge. Integrate remote changes." }
+    },
+
+    {
+      id: 16, arc: 3, nodeType: "normal",
+      title: "Sending Your Work",
+      story: "We have completed several important recoveries in our local timeline and it is now time to share that work with the rest of the expedition. By transmitting our local record to the remote Archive, we ensure that the entire team has access to the latest findings.",
+      task: "Push your local commits to the 'origin' remote on the 'main' branch.",
+      xp: 10, qType: "terminal", command: "git push origin main",
+      hint: "Push, then remote name, then branch name.",
+      explanation: "git push sends your local commit history to a remote server. This is how you share your progress with others.",
+      example: "$ git push origin main",
+      fieldNote: { cmd: "git push origin main", desc: "Send local commits to remote." }
+    },
+
+    {
+      id: 17, arc: 3, nodeType: "normal",
+      title: "Command Identification",
+      story: "A stone panel in the chamber shows four remote commands, but the descriptions have faded over time. To properly maintain the connection to the Nexus, we must identify the specific role of each command.",
+      task: "Match each Git remote command to what it actually does.",
+      xp: 20, qType: "match",
+      pairs: [
+        { left: "git fetch",  right: "Downloads remote changes, no merge" },
+        { left: "git pull",   right: "Downloads AND merges into current branch" },
+        { left: "git push",   right: "Uploads local commits to remote" },
+        { left: "git clone",  right: "Copies an entire repository locally" }
+      ],
+      hint: "Think: fetch = download only. pull = download + integrate. push = upload. clone = full copy.",
+      explanation: "These four commands are the foundation of working with remotes. Fetch allows for inspection, pull updates your work, push shares your work, and clone creates a starting point from an existing project.",
+      example: "$ git clone https://url.com/repo.git",
+      fieldNote: { cmd: "fetch / pull / push / clone", desc: "The four pillars of remote work." }
+    },
+
+    {
+      id: 18, arc: 3, nodeType: "merge",
+      title: "Two Paths Become One",
+      story: "The work on our excavation branch is finally complete and the data is clean. It is time for the Convergence, where we rejoin our parallel timeline with the primary archive. The chamber walls glow as we prepare to integrate the histories.",
+      task: "Merge the 'excavation' branch into your current branch.",
+      xp: 15, qType: "terminal", command: "git merge excavation",
+      hint: "Two words: 'git merge' followed by the branch name.",
+      explanation: "git merge integrates the changes from another branch into the one you are currently using. If the branches have diverged, the system will create a merge commit to tie the two histories together.",
+      example: "$ git checkout main\n$ git merge excavation",
+      fieldNote: { cmd: "git merge <branch>", desc: "Bring another branch's history into current." }
+    },
+
+    {
+      id: 19, arc: 3, nodeType: "merge",
+      title: "The Glitch Markers",
+      story: "A conflict has been detected because two specialists modified the same section of a file at the same time. The machine cannot determine which version is correct and has paused for our intervention. We must identify these markers before we can resolve the conflict manually.",
+      task: "Click ALL lines that are Git conflict markers in this file.",
+      xp: 20, qType: "conflict",
+      lines: [
+        { text: "function recoverSector() {",        isMarker: false },
+        { text: "<<<<<<< HEAD",                       isMarker: true  },
+        { text: "  return 'original archive data';", isMarker: false },
+        { text: "=======",                            isMarker: true  },
+        { text: "  return 'recovered nexus data';",  isMarker: false },
+        { text: ">>>>>>> excavation",                 isMarker: true  },
+        { text: "}",                                  isMarker: false },
+      ],
+      hint: "There are exactly 3 markers: the start (<<<<<<<), the divider (=======), and the end (>>>>>>>).",
+      explanation: "Git uses three markers to show a conflict. The top section shows your current version, and the bottom section shows the version you are trying to merge. To fix it, remove these markers and edit the code, then add and commit the result.",
+      example: "# After editing the file to resolve:\n$ git add recovery.txt\n$ git commit -m \"Resolve merge conflict in recovery\"\n\n# Or abort the merge entirely:\n$ git merge --abort",
+      fieldNote: { cmd: "<<<<<<< / ======= / >>>>>>>", desc: "Conflict markers. Edit file, then add + commit." }
+    },
+
+    /* ARC IV: CRISIS PROTOCOL */
+
+    {
+      id: 20, arc: 4, nodeType: "normal",
+      title: "The Anomaly",
+      story: "An alarm sounds throughout the Nexus. A slow corruption is spreading through the Repository. Files are being modified without authorization and commits are appearing with incorrect messages. We need to investigate without losing the progress we have made so far.",
+      task: "Temporarily save your uncommitted changes without committing them.",
+      xp: 10, qType: "binary",
+      question: "Which command hides work temporarily?",
+      options: ["git stash", "git save"],
+      answer: "git stash",
+      hint: "Think of a hidden compartment. A supply ___.",
+      explanation: "git stash temporarily shelves your uncommitted changes, giving you a clean working directory. These changes are saved to a stack rather than the permanent history.",
+      example: "$ git stash\nSaved working directory and index state WIP on main",
+      fieldNote: { cmd: "git stash", desc: "Hide uncommitted work safely. Restore later." }
+    },
+
+    {
+      id: 21, arc: 4, nodeType: "normal",
+      title: "Reclaiming the Work",
+      story: "The investigation is complete and the corruption has been neutralized. With the all clear signal given, it is time to restore our hidden work and resume the mission.",
+      task: "Restore the most recent stashed changes AND remove them from the stash stack.",
+      xp: 10, qType: "choice",
+      options: ["git stash pop", "git stash apply", "git stash restore", "git stash get"],
+      answer: "git stash pop",
+      hint: "Pop applies the stash AND removes it from the stack. Apply keeps it in the stack.",
+      explanation: "git stash pop applies the most recent stash and simultaneously deletes it from your stash list. If you want to apply changes but keep the backup, use git stash apply instead.",
+      example: "$ git stash pop\nDropped stash@{0}",
+      fieldNote: { cmd: "git stash pop", desc: "Restore stash + remove it from stack." }
+    },
+
+    {
+      id: 22, arc: 4, nodeType: "normal",
+      title: "The Premature Commit",
+      story: "During the chaos of the crisis, a junior specialist accidentally committed a half finished file. The message is incorrect and the code is incomplete. The commit is only a few minutes old and no one else has pulled it yet. We can undo the mistake, but we must be careful to move the work back into a staged state rather than deleting it entirely.",
+      task: "Undo the last commit but keep the changes staged.",
+      xp: 15, qType: "choice",
+      options: ["git reset --soft HEAD~1", "git reset --hard HEAD~1", "git revert HEAD", "git commit --undo"],
+      answer: "git reset --soft HEAD~1",
+      hint: "--soft moves the commit pointer back but keeps your files staged. --hard DESTROYS the changes.",
+      explanation: "git reset --soft moves the branch pointer back to a previous commit but leaves your changes in the staging area. HEAD~1 refers to the commit immediately before the current one.",
+      example: "$ git reset --soft HEAD~1\n# Your changes are back in the staging area.",
+      fieldNote: { cmd: "git reset --soft HEAD~1", desc: "Undo last commit. Keep changes staged." }
+    },
+
+    {
+      id: 23, arc: 4, nodeType: "normal",
+      title: "The Risk Assessment",
+      story: "The team has discovered a problematic commit deeper in the Repository history. We are debating the best way to handle it. One specialist suggests a hard reset, but another argues for a method that creates a clear reversal record. Which approach is safer for a shared branch?",
+      task: "Which command safely reverses a PUSHED commit without rewriting history?",
+      xp: 15, qType: "choice",
+      options: ["git revert HEAD", "git reset --hard HEAD~1", "git undo HEAD", "git rollback"],
+      answer: "git revert HEAD",
+      hint: "Revert creates a NEW commit that undoes the old one. History is preserved.",
+      explanation: "git revert creates a new commit that is the exact inverse of a previous one. This is the safest way to undo changes on public or shared branches because it does not rewrite the history.",
+      example: "$ git revert HEAD\n[main b2c4f9a] Revert \"Bad commit message\"",
+      fieldNote: { cmd: "git revert HEAD", desc: "Safe undo for pushed commits. Creates new commit." }
+    },
+
+    {
+      id: 24, arc: 4, nodeType: "normal",
+      title: "The Metaphor Matrix",
+      story: "In the crisis protocol chamber, a training construct from the Nexus presents a calibration test. It projects a series of Git commands alongside blank spaces. Our task is to match each command to the real world metaphors the original architects used to explain the system.",
+      task: "Match each Git concept to its real-world metaphor.",
+      xp: 20, qType: "match",
+      pairs: [
+        { left: "git stash",  right: "Locking unfinished work in a drawer" },
+        { left: "git commit", right: "Taking a photograph of the current state" },
+        { left: "git branch", right: "Making a photocopy to experiment on" },
+        { left: "git revert", right: "Writing a correction note in the margin" }
+      ],
+      hint: "Stash = temporary hiding spot. Commit = permanent snapshot. Branch = safe copy. Revert = visible correction.",
+      explanation: "Stashing is like putting work in a drawer for later. A commit is like a permanent photograph of your project. Branching is like making a photocopy to test ideas safely. Reverting is like adding a visible correction to a document without erasing the original error.",
+      example: "# Stash: \"I will hide this for now.\"\n# Commit: \"I am recording this state forever.\"",
+      fieldNote: { cmd: "Metaphors", desc: "Stash=drawer, Commit=photo, Branch=copy, Revert=errata" }
+    },
+
+    /* ARC V: THE DIGITAL ASCENT */
+
+    {
+      id: 25, arc: 5, nodeType: "normal",
+      title: "The Threshold",
+      story: "Beyond the Nexus lies a door of polished black glass. An electric blue glow outlines the frame, and as we step through, the stone walls vanish and are replaced by structures of pure light and data. The original civilization eventually moved their entire existence into the system itself.",
+      task: "Clean up: delete the now-merged local 'excavation' branch.",
+      xp: 10, qType: "fill",
+      template: "git branch ___ excavation", blanks: ["-d"],
+      hint: "The lowercase -d flag is for safe deletion of merged branches.",
+      explanation: "git branch -d <name> deletes a local branch only if it has been fully merged into your current branch. Use a capital -D to force-delete an unmerged branch.",
+      example: "$ git branch -d excavation\nDeleted branch excavation",
+      fieldNote: { cmd: "git branch -d <name>", desc: "Safely delete a merged local branch." }
+    },
+
+    {
+      id: 26, arc: 5, nodeType: "normal",
+      title: "The Reference Log",
+      story: "A specialist who entered before us performed a hard reset and accidentally erased several important commits. In this environment, nothing is truly deleted. The system maintains a secret record of every movement of the HEAD pointer, even after resets or rebases.",
+      task: "View the reference log showing every HEAD movement, including resets.",
+      xp: 15, qType: "terminal", command: "git reflog",
+      hint: "The command combines the words 'reference' and 'log'.",
+      explanation: "git reflog is the ultimate safety net in Git. It records every time your HEAD pointer moves, such as during checkouts, commits, or resets. Even if you perform a hard reset, the previous commit hashes remain in the reflog for a limited time.",
+      example: "$ git reflog\na4f3b2e HEAD@{0}: reset: moving to HEAD~1",
+      fieldNote: { cmd: "git reflog", desc: "The safety net that records all HEAD movements." }
+    },
+
+    {
+      id: 27, arc: 5, nodeType: "merge",
+      title: "The Linear History",
+      story: "The lead architect presents us with a question about how history should be recorded. When two timelines converge, we can either leave a visible fork in the record or rewrite the story so it appears as a single linear sequence.",
+      task: "Which command rewrites commits to sit atop another branch for a linear history?",
+      xp: 15, qType: "binary",
+      question: "For a clean linear history, use:",
+      options: ["git rebase main", "git merge main"],
+      answer: "git rebase main",
+      hint: "Think of moving the 'base' of your work onto a new foundation.",
+      explanation: "git rebase takes the commits from your current branch and 'replays' them on top of another branch. This results in a much cleaner, linear project history without merge commits. Never rebase branches already shared with others.",
+      example: "$ git checkout feature\n$ git rebase main",
+      fieldNote: { cmd: "git rebase", desc: "Rewrite commits onto a new base for a linear history." }
+    },
+
+    {
+      id: 28, arc: 5, nodeType: "normal",
+      title: "The Tag Protocol",
+      story: "We have reached a chamber where the civilization recorded their major milestones. These are not just standard commits, but specific moments in time given human-readable names. The architects believed that certain achievements deserve a permanent place in the record.",
+      task: "Tag the current commit as version 'v1.0'.",
+      xp: 10, qType: "terminal", command: "git tag v1.0",
+      hint: "Use the tag command followed by the version name.",
+      explanation: "git tag <name> creates a pointer to a specific point in your history, usually used to mark release points like v1.0 or v2.0. Unlike branches, tags do not move when you make new commits.",
+      example: "$ git tag v1.0\n# To see all tags: git tag",
+      fieldNote: { cmd: "git tag <name>", desc: "Create a permanent marker for a specific version." }
+    },
+
+    {
+      id: 29, arc: 5, nodeType: "normal",
+      title: "Interactive Sorting",
+      story: "Before we can enter the inner sanctum, we must pass one final knowledge test. The digital architect presents us with a professional workflow used by the original specialists. The steps are currently out of order.",
+      task: "Arrange the advanced Git workflow in the correct order.",
+      xp: 25, qType: "sort",
+      items: ["git push origin feature", "git checkout -b feature", "git rebase main", "git add .", "git commit -m 'done'"],
+      answer: ["git checkout -b feature", "git add .", "git commit -m 'done'", "git rebase main", "git push origin feature"],
+      hint: "Start by creating a branch, then work and commit before cleaning up the history.",
+      explanation: "The professional workflow involves creating a new branch for each feature, committing your work, and then rebasing onto the main branch to ensure your history remains clean and linear before you push.",
+      example: "$ git checkout -b feature-a\n$ git add .\n$ git commit -m \"Finish feature\"\n$ git rebase main\n$ git push origin feature-a",
+      fieldNote: { cmd: "Professional Workflow", desc: "The standard sequence for feature development." }
+    },
+
+    {
+      id: 30, arc: 5, nodeType: "normal",
+      title: "Ignoring the Noise",
+      story: "The Repository contains more than just essential code. It is often cluttered with machine-generated files, logs, and temporary data that should not be tracked. The ancient architects used a specific manifest to tell the system which files to ignore.",
+      task: "What is the name of the file that tells Git which files to ignore?",
+      xp: 10, qType: "choice",
+      options: [".gitignore", ".git-ignore", "git.ignore", ".ignore"],
+      answer: ".gitignore",
+      hint: "It is a hidden file starting with a dot followed by the word 'ignore'.",
+      explanation: "A .gitignore file is a plain text file where you list the names of files and folders that Git should ignore. This prevents your repository from becoming bloated with unnecessary files like compiled code or local configuration settings.",
+      example: "# Inside .gitignore:\nnode_modules/\n*.log",
+      fieldNote: { cmd: ".gitignore", desc: "A manifest used to exclude files from tracking." }
+    },
+
+    {
+      id: 31, arc: 5, nodeType: "normal",
+      title: "The Configuration Rite",
+      story: "Every commit in the Repository carries a signature including a name and email address. However, our current terminal has not been configured yet. Before we can contribute to the Chronicle, the system must know our identity.",
+      task: "What command sets your Git username globally?",
+      xp: 10, qType: "fill",
+      template: `git config ___ user.name "Your Name"`, blanks: ["--global"],
+      hint: "Use a flag that ensures this setting applies to every repository on your machine.",
+      explanation: "The git config --global command allows you to set your identity for all projects on your computer. It is one of the first things you should do when setting up Git.",
+      example: "$ git config --global user.name \"Rainier-PS\"",
+      fieldNote: { cmd: "git config --global", desc: "Set your identity for all Git projects." }
+    },
+
+    {
+      id: 32, arc: 5, nodeType: "normal",
+      title: "Inspecting a Commit",
+      story: "The architect flags a specific commit from the distant past that may be related to the corruption we found earlier. We need to see the actual changes — every line that was added or removed in that specific snapshot.",
+      task: "View the detailed changes introduced by a specific commit.",
+      xp: 15, qType: "choice",
+      options: ["git show a4f3b2e", "git diff a4f3b2e", "git log -p a4f3b2e", "git inspect a4f3b2e"],
+      answer: "git show a4f3b2e",
+      hint: "The command name implies you want the system to display the commit details.",
+      explanation: "git show displays both the metadata of a commit and the full diff of the changes made. This is the fastest way to see exactly what happened in a single commit.",
+      example: "$ git show a4f3b2e",
+      fieldNote: { cmd: "git show <hash>", desc: "View the full details and diff of a specific commit." }
+    },
+
+    {
+      id: 33, arc: 5, nodeType: "normal",
+      title: "Finding the Culprit",
+      story: "We have narrowed down the source of the corruption to a single line in a file, but that file has been edited by many different people. We need to find out who was the last person to modify that specific line.",
+      task: "Which command shows which commit last modified each line of a file?",
+      xp: 15, qType: "binary",
+      question: "To see who last changed each line in a file:",
+      options: ["git blame recovery.txt", "git log recovery.txt"],
+      answer: "git blame recovery.txt",
+      hint: "The command name suggests you are trying to find who is responsible for a change.",
+      explanation: "git blame provides a line by line breakdown of a file, showing the commit hash and author for every modification. It is an essential tool for debugging and understanding the history of a specific piece of code.",
+      example: "$ git blame recovery.txt",
+      fieldNote: { cmd: "git blame <file>", desc: "Identify who last modified each line in a file." }
+    },
+
+    {
+      id: 34, arc: 5, nodeType: "merge",
+      title: "The Final Sequence",
+      story: "We have reached the final chamber of the Kethara Repository. The digital architect presents the ultimate challenge: we must demonstrate complete mastery of the Git workflow by arranging the complete professional cycle.",
+      task: "Arrange the COMPLETE professional Git workflow in order.",
+      xp: 30, qType: "sort",
+      items: [
+        "git push origin feature",
+        "git clone https://repo.git",
+        "git commit -m 'feat: add recovery'",
+        "git checkout -b feature",
+        "git add ."
+      ],
+      answer: [
+        "git clone https://repo.git",
+        "git checkout -b feature",
+        "git add .",
+        "git commit -m 'feat: add recovery'",
+        "git push origin feature"
+      ],
+      hint: "Start with a new copy of the project and end by sharing your work with the remote server.",
+      explanation: "The full professional cycle begins with cloning a repository and creating a new branch for your work. You then stage and commit your changes locally before pushing them to the remote server.",
+      example: "$ git clone [url]\n$ git checkout -b feature\n$ git add .\n$ git commit -m \"message\"\n$ git push origin feature",
+      fieldNote: { cmd: "Full Workflow", desc: "The complete cycle from cloning to pushing changes." }
+    },
+
+    {
+      id: 35, arc: 5, nodeType: "normal",
+      title: "The Aftermath",
+      story: "The Repository pulses with a steady rhythm now. New files are created, old ones are deleted, and sometimes you need to see exactly what you modified before deciding whether to commit it at all.",
+      task: "See what has changed in your working directory since the last commit.",
+      xp: 10, qType: "terminal", command: "git diff",
+      hint: "The command name literally means the difference between two states.",
+      explanation: "git diff shows the exact lines that have been added or removed in your working directory since the last commit, but only for files that are not yet staged. Use git diff --staged to compare what is staged against the last commit.",
+      example: "$ git diff\n# Shows unstaged changes.\n\n$ git diff --staged\n# Shows staged changes vs last commit.",
+      fieldNote: { cmd: "git diff", desc: "Show what changed since the last commit." }
+    },
+
+    {
+      id: 36, arc: 5, nodeType: "normal",
+      title: "The Unstaging Protocol",
+      story: "A junior specialist accidentally staged a configuration file that contains sensitive access credentials. We need to remove it from the staging area without deleting the file itself from disk.",
+      task: "Remove 'secrets.txt' from the staging area without deleting the file.",
+      xp: 10, qType: "fill",
+      template: "git restore ___ secrets.txt", blanks: ["--staged"],
+      hint: "You want to restore the staged version back to unstaged. The flag specifies the area.",
+      explanation: "git restore --staged <file> removes a file from the staging area and puts it back in your working directory as an unstaged change. The file itself is untouched on disk.",
+      example: "$ git restore --staged secrets.txt\n# File is back to unstaged state.",
+      fieldNote: { cmd: "git restore --staged <file>", desc: "Unstage a file without touching it on disk." }
+    },
+
+    {
+      id: 37, arc: 5, nodeType: "normal",
+      title: "Discarding Local Changes",
+      story: "We spent the last hour editing a translation file and the results made things worse. The file is not staged. Rather than manually undoing every change, the system allows us to discard all local modifications to a specific file instantly.",
+      task: "Discard all local changes to 'translation.txt' and restore the last committed version.",
+      xp: 10, qType: "terminal", command: "git restore translation.txt",
+      hint: "Restore the file to its last committed state. Just the filename, no flags needed.",
+      explanation: "git restore <file> discards all uncommitted changes to a specific file, reverting it to the state it was in at the last commit. Use it carefully — changes that were never committed are permanently lost.",
+      example: "$ git restore translation.txt\n# All changes to translation.txt are gone.",
+      fieldNote: { cmd: "git restore <file>", desc: "Discard local changes and restore last committed state." }
+    },
+
+    {
+      id: 38, arc: 5, nodeType: "normal",
+      title: "The Amend Protocol",
+      story: "We just committed a recovery record and immediately noticed two problems: a typo in the message and a missing file. Fortunately, no one has pulled our commit yet. The architect shows us how to absorb a new staged change and rewrite the message in one operation.",
+      task: "Which flag allows you to modify the most recent commit?",
+      xp: 10, qType: "binary",
+      question: "To fix the last commit (message or files), use:",
+      options: ["git commit --amend", "git commit --fix"],
+      answer: "git commit --amend",
+      hint: "The word 'amend' means to make corrections to something.",
+      explanation: "git commit --amend opens your editor to rewrite the last commit message and also absorbs anything currently in the staging area into that commit. Never amend a commit that has already been pushed and shared with others.",
+      example: "# Fix the message only:\n$ git commit --amend -m \"Correct message here\"\n\n# Add a forgotten file:\n$ git add forgotten.txt\n$ git commit --amend --no-edit",
+      fieldNote: { cmd: "git commit --amend", desc: "Rewrite the last commit. Never on shared branches." }
+    },
+
+    {
+      id: 39, arc: 5, nodeType: "normal",
+      title: "Stash With a Name",
+      story: "The expedition has grown in complexity and we now have several different pieces of unfinished work to shelve at different times. Plain stash entries with no label are difficult to tell apart. The architect reveals that the system allows us to save a stash with a descriptive message.",
+      task: "Stash your current changes with the message 'wip: decoder fix'.",
+      xp: 10, qType: "terminal", command: `git stash push -m "wip: decoder fix"`,
+      hint: "Use git stash push with the -m flag followed by a message in quotes.",
+      explanation: "git stash push -m \"message\" saves your changes to the stash stack with a descriptive label. When you run git stash list later, you will see this message next to the entry.",
+      example: "$ git stash push -m \"wip: decoder fix\"\nSaved working directory and index state On main: wip: decoder fix",
+      fieldNote: { cmd: `git stash push -m "msg"`, desc: "Save a stash with a descriptive label." }
+    },
+
+    {
+      id: 40, arc: 5, nodeType: "branch",
+      title: "The Rename",
+      story: "One of our working branches was created with a temporary name during an emergency. Now that the situation has stabilised, the name no longer reflects the purpose of the work. Rather than deleting and recreating it, the system allows us to rename it in place.",
+      task: "Rename the current branch from 'emergency-fix' to 'scanner-repair'.",
+      xp: 10, qType: "fill",
+      template: "git branch ___ scanner-repair", blanks: ["-m"],
+      hint: "The flag stands for 'move', which is how Unix systems rename things.",
+      explanation: "git branch -m <new-name> renames the branch you are currently on. If you want to rename a branch you are not currently on, use git branch -m <old-name> <new-name>.",
+      example: "# Rename current branch:\n$ git branch -m scanner-repair\n\n# Rename any branch:\n$ git branch -m emergency-fix scanner-repair",
+      fieldNote: { cmd: "git branch -m <name>", desc: "Rename the current branch in place." }
+    },
+
+    {
+      id: 41, arc: 5, nodeType: "normal",
+      title: "Searching the Archive",
+      story: "We need to find every location in the codebase where a specific function name was used. The files are scattered across dozens of directories and searching manually would take days. The architect reveals a built-in search tool that scans every tracked file for a given pattern.",
+      task: "Search all tracked files for the text 'recoverSector'.",
+      xp: 10, qType: "terminal", command: "git grep recoverSector",
+      hint: "It works like a standard grep but only searches files tracked by Git.",
+      explanation: "git grep <pattern> searches the contents of all tracked files for a given string or regular expression. It is much faster than running a general grep on a large project because it only searches files Git knows about.",
+      example: "$ git grep recoverSector\nrecovery.js:12: function recoverSector() {\n\n# Show line numbers:\n$ git grep -n recoverSector",
+      fieldNote: { cmd: "git grep <pattern>", desc: "Search tracked files for a string or pattern." }
+    },
+
+    {
+      id: 42, arc: 5, nodeType: "normal",
+      title: "Cherry Picking",
+      story: "The scanner-repair branch has twelve commits. Most of them are experimental and not ready for the main timeline. However, there is one specific commit that contains a critical bug fix we need immediately. We want to copy only that commit without merging the entire branch.",
+      task: "Apply only the commit 'a4f3b2e' to the current branch.",
+      xp: 15, qType: "terminal", command: "git cherry-pick a4f3b2e",
+      hint: "The command name describes selecting one specific item from a collection.",
+      explanation: "git cherry-pick <hash> copies a specific commit from anywhere in the repository and applies it as a new commit on your current branch. The original commit remains where it was.",
+      example: "$ git cherry-pick a4f3b2e\n[main c9d2f11] Apply critical fix\n 1 file changed, 3 insertions(+)",
+      fieldNote: { cmd: "git cherry-pick <hash>", desc: "Copy one specific commit to the current branch." }
+    },
+
+    {
+      id: 43, arc: 5, nodeType: "normal",
+      title: "Bisect: The Time Search",
+      story: "The corruption in the Repository introduced itself at some unknown point in the past. The commit log shows hundreds of entries and we cannot check them all by hand. The architect describes a method that cuts the history in half repeatedly until it isolates the single commit responsible.",
+      task: "Match each bisect command to the correct step in the process.",
+      xp: 20, qType: "match",
+      pairs: [
+        { left: "git bisect start",     right: "Begins the binary search session" },
+        { left: "git bisect bad",       right: "Marks the current commit as broken" },
+        { left: "git bisect good v1.0", right: "Marks a known working commit" },
+        { left: "git bisect reset",     right: "Ends the session and returns to HEAD" }
+      ],
+      hint: "Think about the order: start, declare the bad point, declare the good point, then clean up when done.",
+      explanation: "git bisect performs a binary search through your commit history to find the exact commit that introduced a bug. You start the session, mark a bad commit and a known good one, then test each midpoint Git checks out for you.",
+      example: "$ git bisect start\n$ git bisect bad\n$ git bisect good v1.0\n# Test your code, then:\n$ git bisect good  # or bad\n$ git bisect reset",
+      fieldNote: { cmd: "git bisect", desc: "Binary search to find which commit introduced a bug." }
+    },
+
+    {
+      id: 44, arc: 5, nodeType: "merge",
+      title: "The Final Record",
+      story: "The Repository is fully restored. The digital architect stands before us one last time with a question about philosophy. A commit message is not a formality — it is a message to the next person who reads the record, whether that person is a colleague, a stranger, or your own future self.",
+      task: "Arrange these commit message guidelines from most important to least important.",
+      xp: 30, qType: "sort",
+      items: [
+        "Explain WHY the change was made",
+        "Use imperative tense: 'Fix bug', not 'Fixed bug'",
+        "Keep the subject line under 50 characters",
+        "Add a body paragraph for complex changes"
+      ],
+      answer: [
+        "Use imperative tense: 'Fix bug', not 'Fixed bug'",
+        "Keep the subject line under 50 characters",
+        "Explain WHY the change was made",
+        "Add a body paragraph for complex changes"
+      ],
+      hint: "Format comes first, then content. The subject line is the most visible part of any commit.",
+      explanation: "A well-written commit message is one of the most valuable habits a developer can build. Use the imperative mood for the subject, keep it short, and explain the reason behind the change — not just what changed.",
+      example: "# Good:\nFix memory leak in sector recovery loop\n\nThe recovery function was holding references to\ncompleted objects, preventing garbage collection.\n\n# Bad:\n$ git commit -m \"fixed stuff\"",
+      fieldNote: { cmd: "Commit message style", desc: "Imperative, short subject, explain the WHY." }
+    },
+
+    /* ARC VI: DEEP PROTOCOLS */
+
+    {
+      id: 45, arc: 6, nodeType: "normal",
+      title: "The Flag Chamber",
+      story: "A sealed inner chamber has just opened. Its walls are covered in command fragments, each containing multiple parts: the base command, the flags, the arguments. We are given a complete command and asked to tap the exact part that controls the output format.",
+      task: "In the command below, tap the token that limits the log output to 5 commits.",
+      xp: 15, qType: "hotspot",
+      tokens: ["git", "log", "--oneline", "-5", "main"],
+      answer: "-5",
+      hint: "Flags that take a number usually control quantity or depth.",
+      explanation: "The -5 flag tells git log to show only the most recent 5 commits. You can use any number here. Combined with --oneline, this is a very fast way to inspect recent history.",
+      example: "$ git log --oneline -5 main\nc3d9f11 Fix sector alignment\na4f3b2e Recover fragment seven",
+      fieldNote: { cmd: "git log -N", desc: "Limit log output to the N most recent commits." }
+    },
+
+    {
+      id: 46, arc: 6, nodeType: "normal",
+      title: "Reading the Output",
+      story: "The archive system has printed a status report to the terminal. Our junior specialist is confused by the symbols in the output and cannot determine which file is staged and which is modified but not yet staged.",
+      task: "Look at this 'git status' output and answer: which file is staged for commit?",
+      xp: 15, qType: "output-read",
+      output: `On branch main\nChanges to be committed:\n  (use "git restore --staged <file>..." to unstage)\n\n\tmodified:   archive.txt\n\nChanges not staged for commit:\n  (use "git add <file>..." to update)\n\n\tmodified:   notes.txt`,
+      question: "Which file is staged and ready to be committed?",
+      options: ["archive.txt", "notes.txt", "Both files", "Neither file"],
+      answer: "archive.txt",
+      hint: "Look for the section titled 'Changes to be committed'. Files listed there are in the staging area.",
+      explanation: "In git status output, files listed under 'Changes to be committed' are in the staging area and will be included in the next commit. Files under 'Changes not staged for commit' have been modified but not yet staged.",
+      example: "Changes to be committed:\n\tmodified:   archive.txt   <-- staged\nChanges not staged for commit:\n\tmodified:   notes.txt     <-- not staged",
+      fieldNote: { cmd: "git status sections", desc: "Staged = 'to be committed'. Unstaged = 'not staged'." }
+    },
+
+    {
+      id: 47, arc: 6, nodeType: "branch",
+      title: "Tracking a Remote Branch",
+      story: "A new team member has created a local branch called 'signal-boost'. She wants to link it to a remote branch of the same name on the origin server so that future push and pull commands know where to go automatically.",
+      task: "Push the local branch and set origin as its upstream in one command.",
+      xp: 15, qType: "fill",
+      template: "git push ___ origin signal-boost", blanks: ["-u"],
+      hint: "The flag is a single letter that stands for 'upstream'. It is lowercase.",
+      explanation: "git push -u origin <branch> pushes your local branch to the remote and simultaneously sets the remote branch as the upstream tracking branch. After running this once, you can use just 'git push' with no arguments on that branch.",
+      example: "$ git push -u origin signal-boost\nBranch 'signal-boost' set up to track remote branch 'signal-boost' from 'origin'.",
+      fieldNote: { cmd: "git push -u origin <branch>", desc: "Push and set upstream tracking in one step." }
+    },
+
+    {
+      id: 48, arc: 6, nodeType: "normal",
+      title: "The Hotspot: Commit Hash",
+      story: "The archive has printed a detailed log entry for the most recent commit. The system needs us to confirm we can identify the unique identifier that pinpoints this exact moment in the timeline.",
+      task: "In this log entry, tap the commit hash.",
+      xp: 15, qType: "hotspot",
+      tokens: ["commit", "3a8c5f9", "Author:", "Lena", "Date:", "Mon"],
+      answer: "3a8c5f9",
+      hint: "A commit hash looks like a short string of random letters and numbers.",
+      explanation: "Every Git commit is identified by a SHA-1 hash. In practice you only need the first 7 characters to reference a commit uniquely in most repositories.",
+      example: "$ git log --oneline\n3a8c5f9 Add signal calibration\na4f3b2e Recover fragment seven",
+      fieldNote: { cmd: "Commit hash", desc: "A unique 40-char ID. First 7 chars are usually enough." }
+    },
+
+    {
+      id: 49, arc: 6, nodeType: "normal",
+      title: "True or False: Reset Modes",
+      story: "The training construct in the deep archive has prepared a batch evaluation. It presents several statements about the three modes of git reset. Understanding these distinctions is critical because using the wrong mode can cause permanent data loss.",
+      task: "Mark each statement about git reset as TRUE or FALSE.",
+      xp: 25, qType: "truefalse-set",
+      statements: [
+        { text: "git reset --soft keeps changes in the staging area.", answer: true },
+        { text: "git reset --hard deletes uncommitted changes permanently.", answer: true },
+        { text: "git reset --mixed stages your changes but moves the HEAD pointer.", answer: false },
+        { text: "git reset only affects your local repository.", answer: true }
+      ],
+      hint: "--mixed (the default) keeps changes in the working directory but removes them from staging. It does not stage them.",
+      explanation: "The three reset modes differ in how far back they roll things: --soft moves only the HEAD pointer and leaves the staging area intact. --mixed clears the staging area but leaves your files on disk. --hard clears the staging area and also discards all file modifications.",
+      example: "$ git reset --soft HEAD~1   # HEAD moves, staging area kept\n$ git reset --mixed HEAD~1  # HEAD moves, staging area cleared\n$ git reset --hard HEAD~1   # HEAD moves, files reverted too",
+      fieldNote: { cmd: "reset --soft/--mixed/--hard", desc: "Three modes with increasing destructiveness." }
+    },
+
+    {
+      id: 50, arc: 6, nodeType: "normal",
+      title: "The Multi-Step Terminal",
+      story: "The deepest section of the archive requires a multi-step unlock sequence. We must execute a precise chain of three commands in order: stage a new file, commit it, and verify it. The system will only unlock the next chamber if all three commands are entered correctly and in sequence.",
+      task: "Complete all three steps of the workflow: stage a new file called 'signal.txt', then commit with the message 'Add signal'.",
+      xp: 25, qType: "sequence",
+      steps: [
+        { prompt: "Step 1 of 3 — Stage signal.txt",          command: "git add signal.txt",          label: "Stage the file" },
+        { prompt: "Step 2 of 3 — Commit with a message",     command: `git commit -m "Add signal"`,  label: "Commit the file" },
+        { prompt: "Step 3 of 3 — View the new log entry",    command: "git log --oneline",           label: "Verify the commit" }
+      ],
+      hint: "Each step must be completed before the next one unlocks. Use exact command syntax.",
+      explanation: "This three-step sequence is the complete core workflow of Git: stage with git add, save with git commit, then verify with git log. Practicing this sequence until it becomes automatic is the foundation of every more advanced Git skill.",
+      example: "$ git add signal.txt\n$ git commit -m \"Add signal\"\n$ git log --oneline\nc3d9f11 Add signal",
+      fieldNote: { cmd: "add + commit + log", desc: "The core three-step verification loop." }
+    },
+
+    {
+      id: 51, arc: 6, nodeType: "normal",
+      title: "The Flag Identifier",
+      story: "A directory of command flags has been found in the archive wall. The inscriptions list the flags but their purposes have been shuffled by the corruption. We must pair each flag with the correct description.",
+      task: "Match each Git flag to its correct description.",
+      xp: 20, qType: "match",
+      pairs: [
+        { left: "-u (push)",      right: "Set the upstream tracking branch" },
+        { left: "--staged (diff)", right: "Compare staging area to last commit" },
+        { left: "--no-edit",      right: "Amend last commit without changing message" },
+        { left: "--graph (log)",  right: "Show branch structure visually in terminal" }
+      ],
+      hint: "Think about what each flag modifies: where to push, what to compare, whether to edit, how to display.",
+      explanation: "-u on push sets the tracking relationship. --staged on diff lets you review what is about to be committed. --no-edit on commit amend keeps the existing message. --graph on log draws the branch structure as ASCII art.",
+      example: "$ git push -u origin main\n$ git diff --staged\n$ git commit --amend --no-edit\n$ git log --oneline --graph --all",
+      fieldNote: { cmd: "Common flags", desc: "-u, --staged, --no-edit, --graph each add precision." }
+    },
+
+    {
+      id: 52, arc: 6, nodeType: "normal",
+      title: "The Hotspot: Dangerous Flag",
+      story: "A warning glyph appears on the terminal wall. The architect explains that one of the tokens in this command is responsible for erasing all uncommitted changes permanently. There is no undo. We must identify the destructive element at a glance.",
+      task: "Tap the token in the command below that causes all uncommitted changes to be lost.",
+      xp: 20, qType: "hotspot",
+      tokens: ["git", "reset", "--hard", "HEAD~1"],
+      answer: "--hard",
+      hint: "It is a flag, not a command or a reference. Think about which mode of reset destroys data.",
+      explanation: "The --hard flag is what makes git reset destructive. Without it, reset is relatively safe. The --hard mode tells Git to not only move the HEAD pointer but also to overwrite the contents of your working directory and staging area.",
+      example: "# Safe:\n$ git reset --soft HEAD~1   # keeps your work\n\n# Destructive:\n$ git reset --hard HEAD~1   # destroys your work",
+      fieldNote: { cmd: "--hard flag", desc: "Makes reset destructive. Overwrites all local changes." }
+    },
+
+    {
+      id: 53, arc: 6, nodeType: "normal",
+      title: "Shortlog and Contributors",
+      story: "The expedition leadership wants a summary of who contributed what to the Repository before the restoration. Reading through every commit one by one would take too long. The archive records contain a condensed view of contributions grouped by author.",
+      task: "View a summary of commits grouped by author.",
+      xp: 15, qType: "binary",
+      question: "Which command shows commit counts grouped by contributor?",
+      options: ["git shortlog -sn", "git log --authors"],
+      answer: "git shortlog -sn",
+      hint: "The -s flag means summary and the -n flag sorts by number of commits.",
+      explanation: "git shortlog -sn produces a sorted list of contributors along with how many commits each person has made. The -s flag suppresses individual commit messages and shows only the count. The -n flag sorts from most to fewest commits.",
+      example: "$ git shortlog -sn\n    42  Lena Vasquez\n    31  Rainier-PS\n    18  Dev Okonkwo",
+      fieldNote: { cmd: "git shortlog -sn", desc: "Summarise commits per author, sorted by count." }
+    },
+
+    {
+      id: 54, arc: 6, nodeType: "normal",
+      title: "Worktree: Two Places at Once",
+      story: "A senior architect from the original civilization left a final lesson encoded in the deepest chamber. She had discovered a way to work on two branches simultaneously without losing the state of either. This technique creates a second working directory on disk linked to the same repository.",
+      task: "Which command creates a second working directory for the 'hotfix' branch?",
+      xp: 20, qType: "choice",
+      options: [
+        "git worktree add ../hotfix-dir hotfix",
+        "git checkout --worktree hotfix",
+        "git branch --copy hotfix ../hotfix-dir",
+        "git clone --branch hotfix . ../hotfix-dir"
+      ],
+      answer: "git worktree add ../hotfix-dir hotfix",
+      hint: "The worktree subcommand is followed by the path for the new directory and then the branch name.",
+      explanation: "git worktree add <path> <branch> creates a new directory on disk that is linked to your existing repository but checked out to a different branch. You can work on the hotfix branch while your main directory stays on main.",
+      example: "$ git worktree add ../hotfix-dir hotfix\nPreparing worktree (checking out 'hotfix')\n\n# List all worktrees:\n$ git worktree list",
+      fieldNote: { cmd: "git worktree add <path> <branch>", desc: "Work on two branches simultaneously in separate folders." }
+    },
+
+    {
+      id: 55, arc: 6, nodeType: "merge",
+      title: "The Complete Specialist",
+      story: "The final chamber of the deep archive has opened. The oldest inscription in the entire Repository is carved here. The civilization's greatest specialists were not those who memorised the most commands. They were those who understood why each command existed and when to reach for it over the alternatives.",
+      task: "Arrange these scenarios in order from the safest operation to the most potentially destructive.",
+      xp: 35, qType: "sort",
+      items: [
+        "git reset --hard HEAD~3",
+        "git log --oneline",
+        "git revert HEAD",
+        "git commit --amend (on a pushed branch)"
+      ],
+      answer: [
+        "git log --oneline",
+        "git revert HEAD",
+        "git commit --amend (on a pushed branch)",
+        "git reset --hard HEAD~3"
+      ],
+      hint: "Reading is always safe. Creating a new reversal commit is safer than rewriting history. Hard reset is the most dangerous.",
+      explanation: "Git operations exist on a spectrum of risk. Read-only operations like git log are always completely safe. git revert is safe even on shared branches because it adds a new commit. Amending a pushed commit rewrites history and will cause problems for collaborators. Hard reset permanently destroys local changes.",
+      example: "# From safest to most dangerous:\n# 1. git log --oneline       (read only)\n# 2. git revert HEAD         (new commit)\n# 3. git commit --amend      (rewrites history)\n# 4. git reset --hard HEAD~3 (destroys work)",
+      fieldNote: { cmd: "Risk spectrum", desc: "log < revert < amend < reset --hard. Know the danger level." }
+    }
+  ]
+};
