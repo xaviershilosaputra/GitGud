@@ -3,60 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitGud</title>
-  <meta name="description" content="An archaeological expedition through the ruins of a lost civilization. Master Git version control through story-driven discovery.">
-  <meta property="og:title" content="GitGud">
-  <meta property="og:description" content="Master Git commands through immersive story-driven archaeology.">
+  <title>Loading…</title>
+  <meta name="description" content="">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
   <div id="prologue-screen" class="screen active">
-    <div class="prologue-bg"></div>
+    <div class="prologue-bg" aria-hidden="true"></div>
     <div class="prologue-content">
-      <div class="prologue-emblem">&#9670;</div>
+      <div class="prologue-emblem" aria-hidden="true">&#9670;</div>
       <div class="prologue-subtitle">AN ARCHAEOLOGICAL EXPEDITION</div>
       <h1 class="prologue-title">CHRONICLES<br><span>OF THE LOST</span><br>REPOSITORY</h1>
-      <div class="prologue-divider"></div>
+      <div class="prologue-divider" aria-hidden="true"></div>
       <div class="prologue-text" id="prologue-text"></div>
       <div class="prologue-actions">
         <button id="prologue-next-btn" class="btn-ancient">CONTINUE</button>
-        <div class="prologue-page" id="prologue-page">1 / 5</div>
+        <div class="prologue-page" id="prologue-page" aria-live="polite">1 / 5</div>
       </div>
     </div>
-    <div class="prologue-dust"></div>
+    <div class="prologue-dust" aria-hidden="true"></div>
   </div>
 
-  <div id="game-screen" class="screen">
+  <div id="game-screen" class="screen" aria-label="Main game">
 
-    <header id="header">
+    <header id="header" role="banner">
       <div class="logo" id="game-logo">
-        <span class="logo-icon">&#9670;</span>
-        <span class="logo-text">GitGud</span>
-        <span class="logo-era" id="logo-era">THE ANCIENT ARCHIVE</span>
+        <span class="logo-icon" aria-hidden="true">&#9670;</span>
+        <span class="logo-text">…</span>
+        <span class="logo-era" id="logo-era"></span>
       </div>
       <div class="header-center">
-        <div class="arc-indicator" id="arc-indicator">ARC I: THE AWAKENING</div>
-        <div class="progress-track">
+        <div class="arc-indicator" id="arc-indicator" aria-live="polite"></div>
+        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Chapter progress">
           <div class="progress-fill" id="progress-fill"></div>
         </div>
-        <div class="progress-label" id="progress-label">0 / 56</div>
+        <div class="progress-label" id="progress-label" aria-live="polite">0 / 0</div>
       </div>
       <div class="header-right">
-        <div class="shard-display" id="shard-display">
-          <span class="shard-gem">&#9670;</span>
+        <div class="shard-display" id="shard-display" aria-label="Shards earned">
+          <span class="shard-gem" aria-hidden="true">&#9670;</span>
           <span id="shard-count">0</span>
           <span class="shard-label">SHARDS</span>
         </div>
-        <div class="streak-pill" id="streak-pill">
+        <div class="streak-pill" id="streak-pill" aria-live="polite" aria-label="Current streak">
           <span id="streak-count">0</span>&#x25B8; STREAK
         </div>
         <button class="hdr-btn" id="sound-btn" aria-label="Toggle sound" aria-pressed="true">SFX ON</button>
-        <button class="hdr-btn" id="map-btn" aria-label="View map">MAP</button>
+        <button class="hdr-btn" id="map-btn" aria-label="View expedition map">MAP</button>
         <button class="hdr-btn" id="settings-btn" aria-label="Open settings">&#9881;</button>
       </div>
     </header>
@@ -74,10 +70,10 @@
           <div class="story-top">
             <div class="chapter-badge-row">
               <span class="chapter-badge" id="chapter-badge">Ch. 01</span>
-              <span class="arc-badge" id="arc-badge">ARC I</span>
+              <span class="arc-badge" id="arc-badge"></span>
               <span class="qtype-badge" id="qtype-badge">TERMINAL</span>
             </div>
-            <h2 class="chapter-title" id="chapter-title">Loading...</h2>
+            <h2 class="chapter-title" id="chapter-title">Loading…</h2>
           </div>
           <div class="story-body">
             <div class="story-icon" id="story-icon" aria-hidden="true">&#9670;</div>
@@ -92,20 +88,20 @@
         <section id="question-zone" aria-label="Question area" aria-live="polite"></section>
 
         <div id="controls-bar">
-          <button class="ctrl-btn" id="hint-btn" aria-label="Use hint for 5 shards">
-            <span class="ctrl-icon">&#9670;</span> ORACLE HINT <span class="ctrl-cost">-5</span>
+          <button class="ctrl-btn" id="hint-btn" aria-label="Use oracle hint for 5 shards">
+            <span class="ctrl-icon" aria-hidden="true">&#9670;</span> ORACLE HINT <span class="ctrl-cost" aria-hidden="true">-5</span>
           </button>
           <button class="ctrl-btn ctrl-skip" id="skip-btn" aria-label="Skip this chapter">
             SKIP CHAPTER
           </button>
-          <div class="xp-preview" id="xp-preview">
-            <span class="xp-icon">+</span><span id="xp-val">10</span> SHARDS ON SUCCESS
+          <div class="xp-preview" id="xp-preview" aria-live="polite">
+            <span class="xp-icon" aria-hidden="true">+</span><span id="xp-val">10</span> SHARDS ON SUCCESS
           </div>
         </div>
 
       </main>
 
-      <aside id="right-panel" aria-label="Quick reference">
+      <aside id="right-panel" aria-label="Field notes quick reference">
         <div class="sidebar-title">FIELD NOTES</div>
         <div id="field-notes"></div>
       </aside>
@@ -113,7 +109,9 @@
     </div>
   </div>
 
-  <div id="map-overlay" class="overlay" role="dialog" aria-label="Chapter map" aria-hidden="true">
+  <!-- Overlays -->
+
+  <div id="map-overlay" class="overlay" role="dialog" aria-label="Expedition map" aria-hidden="true" aria-modal="true">
     <div class="overlay-inner">
       <div class="overlay-title">EXPEDITION MAP</div>
       <div id="map-chapters"></div>
@@ -123,36 +121,33 @@
     </div>
   </div>
 
-  <div id="feedback-overlay" class="overlay" role="dialog" aria-hidden="true">
+  <div id="feedback-overlay" class="overlay" role="dialog" aria-hidden="true" aria-modal="true">
     <div class="overlay-inner feedback-inner">
       <div class="feedback-status" id="fb-status">[SUCCESS]</div>
       <h3 class="feedback-title" id="fb-title">SECTOR RECOVERED</h3>
       <div class="feedback-explanation" id="fb-explanation"></div>
-      <div class="feedback-example" id="fb-example"></div>
+      <pre class="feedback-example" id="fb-example"></pre>
       <div class="feedback-reward" id="fb-reward">+10 SHARDS</div>
       <button class="btn-ancient" id="fb-continue">CONTINUE EXPEDITION</button>
     </div>
   </div>
 
-  <div id="settings-overlay" class="overlay" role="dialog" aria-label="Settings" aria-hidden="true">
+  <div id="settings-overlay" class="overlay" role="dialog" aria-label="Settings" aria-hidden="true" aria-modal="true">
     <div class="overlay-inner">
       <div class="overlay-title">SETTINGS</div>
-
       <div class="settings-group">
         <div class="settings-group-title">PREFERENCES</div>
         <button id="settings-sound-toggle" class="settings-btn" aria-pressed="true">SOUND: ON</button>
       </div>
-
       <div class="settings-group">
         <div class="settings-group-title">GUIDES</div>
         <button id="settings-tour-btn" class="settings-btn">SHOW UI GUIDE AGAIN</button>
         <button id="settings-prologue-btn" class="settings-btn">REPLAY PROLOGUE</button>
       </div>
-
       <div class="settings-group">
         <div class="settings-group-title">DANGER ZONE</div>
         <button id="settings-reset-btn" class="settings-btn settings-danger">RESET ALL PROGRESS</button>
-        <div id="settings-reset-confirm">
+        <div id="settings-reset-confirm" role="alert">
           <div class="confirm-text">This will erase all Shards, completed chapters, and Field Notes. This cannot be undone. Are you certain?</div>
           <div class="confirm-actions">
             <button id="settings-reset-confirm-btn" class="confirm-yes">YES, RESET</button>
@@ -160,7 +155,6 @@
           </div>
         </div>
       </div>
-
       <div class="settings-footer">
         <button class="btn-close" id="settings-close">CLOSE</button>
       </div>
@@ -168,11 +162,11 @@
   </div>
 
   <div id="win-screen" class="screen" aria-hidden="true">
-    <div class="win-bg"></div>
+    <div class="win-bg" aria-hidden="true"></div>
     <div class="win-content">
-      <div class="win-emblem">&#9670;</div>
-      <h2 class="win-title">REPOSITORY RESTORED</h2>
-      <p class="win-sub">You have traversed time itself. From dust and stone to pure light, the Chronicle lives again.</p>
+      <div class="win-emblem" aria-hidden="true">&#9670;</div>
+      <h2 class="win-title" id="win-title-text"></h2>
+      <p class="win-sub" id="win-message-text"></p>
       <div class="win-stats">
         <div class="win-stat">
           <div class="win-num" id="win-shards">0</div>
@@ -183,7 +177,7 @@
           <div class="win-lbl">MAX STREAK</div>
         </div>
         <div class="win-stat">
-          <div class="win-num" id="win-total">56</div>
+          <div class="win-num" id="win-total">0</div>
           <div class="win-lbl">CHAPTERS DONE</div>
         </div>
       </div>
@@ -191,7 +185,7 @@
     </div>
   </div>
 
-  <script src="js/chapters.js"></script>
-  <script src="js/script.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/engine.js"></script>
 </body>
 </html>
