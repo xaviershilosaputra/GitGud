@@ -59,7 +59,6 @@ GitGud saves your progress locally so you can resume your expedition at any time
 ### Future updates
 
 * **Multiplayer "Race" mode** — Compete with others to solve Git puzzles the fastest.
-* **Custom scenario editor** — Allow educators to create their own narrative arcs and tasks.
 * **Advanced visualization** — Addition of more detailed 3D representations of complex rebase operations.
 
 ## License
