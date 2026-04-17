@@ -29,8 +29,8 @@ gitgud/
 ├── css/
 │   └── styles.css
 ├── js/
-│   ├── chapters.js
-│   └── script.js
+│   ├── engine.js
+│   └── config.js
 └── index.html
 
 ```
