@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GitGud</title>
   <meta name="description" content="An archaeological expedition through the ruins of a lost civilization. Master Git version control through story-driven discovery.">
-  <meta property="og:title" content="GitGud — Chronicles of the Lost Repository">
+  <meta property="og:title" content="GitGud">
   <meta property="og:description" content="Master Git commands through immersive story-driven archaeology.">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -44,7 +44,7 @@
         <div class="progress-track">
           <div class="progress-fill" id="progress-fill"></div>
         </div>
-        <div class="progress-label" id="progress-label">0 / 35</div>
+        <div class="progress-label" id="progress-label">0 / 56</div>
       </div>
       <div class="header-right">
         <div class="shard-display" id="shard-display">
@@ -55,8 +55,9 @@
         <div class="streak-pill" id="streak-pill">
           <span id="streak-count">0</span>&#x25B8; STREAK
         </div>
-        <button class="hdr-btn" id="sound-btn" aria-label="Toggle sound">&#9834;</button>
+        <button class="hdr-btn" id="sound-btn" aria-label="Toggle sound" aria-pressed="true">SFX ON</button>
         <button class="hdr-btn" id="map-btn" aria-label="View map">MAP</button>
+        <button class="hdr-btn" id="settings-btn" aria-label="Open settings">&#9881;</button>
       </div>
     </header>
 
@@ -116,7 +117,9 @@
     <div class="overlay-inner">
       <div class="overlay-title">EXPEDITION MAP</div>
       <div id="map-chapters"></div>
-      <button class="btn-close" id="map-close">CLOSE</button>
+      <div class="settings-footer">
+        <button class="btn-close" id="map-close">CLOSE</button>
+      </div>
     </div>
   </div>
 
@@ -131,6 +134,39 @@
     </div>
   </div>
 
+  <div id="settings-overlay" class="overlay" role="dialog" aria-label="Settings" aria-hidden="true">
+    <div class="overlay-inner">
+      <div class="overlay-title">SETTINGS</div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">PREFERENCES</div>
+        <button id="settings-sound-toggle" class="settings-btn" aria-pressed="true">SOUND: ON</button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">GUIDES</div>
+        <button id="settings-tour-btn" class="settings-btn">SHOW UI GUIDE AGAIN</button>
+        <button id="settings-prologue-btn" class="settings-btn">REPLAY PROLOGUE</button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">DANGER ZONE</div>
+        <button id="settings-reset-btn" class="settings-btn settings-danger">RESET ALL PROGRESS</button>
+        <div id="settings-reset-confirm">
+          <div class="confirm-text">This will erase all Shards, completed chapters, and Field Notes. This cannot be undone. Are you certain?</div>
+          <div class="confirm-actions">
+            <button id="settings-reset-confirm-btn" class="confirm-yes">YES, RESET</button>
+            <button id="settings-reset-cancel" class="confirm-no">CANCEL</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-footer">
+        <button class="btn-close" id="settings-close">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
   <div id="win-screen" class="screen" aria-hidden="true">
     <div class="win-bg"></div>
     <div class="win-content">
@@ -138,9 +174,18 @@
       <h2 class="win-title">REPOSITORY RESTORED</h2>
       <p class="win-sub">You have traversed time itself. From dust and stone to pure light, the Chronicle lives again.</p>
       <div class="win-stats">
-        <div class="win-stat"><div class="win-num" id="win-shards">0</div><div class="win-lbl">TOTAL SHARDS</div></div>
-        <div class="win-stat"><div class="win-num" id="win-streak">0</div><div class="win-lbl">MAX STREAK</div></div>
-        <div class="win-stat"><div class="win-num">35</div><div class="win-lbl">CHAPTERS DONE</div></div>
+        <div class="win-stat">
+          <div class="win-num" id="win-shards">0</div>
+          <div class="win-lbl">TOTAL SHARDS</div>
+        </div>
+        <div class="win-stat">
+          <div class="win-num" id="win-streak">0</div>
+          <div class="win-lbl">MAX STREAK</div>
+        </div>
+        <div class="win-stat">
+          <div class="win-num" id="win-total">56</div>
+          <div class="win-lbl">CHAPTERS DONE</div>
+        </div>
       </div>
       <button class="btn-ancient" onclick="GAME.reset()">REPLAY EXPEDITION</button>
     </div>
