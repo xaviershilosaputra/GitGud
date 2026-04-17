@@ -1,29 +1,27 @@
-/* GITGUD — CHAPTERS DATA
-   To add chapters: push new objects to CHAPTERS array.
-   To export to JSON: JSON.stringify(CHAPTERS) */
+/* GITGUD — CHAPTERS DATA */
 
 const PROLOGUE_SLIDES = [
-  `Year unknown. The expedition team has been excavating the Kethara Plateau for six months when they find it — buried beneath forty feet of stone and sand: a structure unlike anything on record. Not a tomb. Not a temple. A machine room.
+  `The year is unknown. The expedition team spent six months digging at the Kethara Plateau before they found it. It was buried under forty feet of stone and sand. This structure is different from anything on record. It is not a tomb. It is not a temple. It is a machine room.
 
-The walls are covered in inscriptions. Not symbols of gods or kings, but something stranger. Sequences. Patterns. Commands.`,
+The walls are covered in inscriptions. These are not symbols of gods or kings. They are something much stranger. You see sequences. You see patterns. You see commands.`,
 
-  `Your team's linguist cracks the first glyph on day three: the inscription reads "git init". An hour later, a second: "git commit". By nightfall, the walls are speaking a language you recognise.
+  `The team linguist cracked the first glyph on day three. The inscription reads "git init". An hour later they found a second one: "git commit". By nightfall the walls were speaking a language you recognize.
 
-Version control. An ancient civilisation built the entire science of version control — not with computers, but carved into stone. And then they vanished, taking their knowledge with them.`,
+It is version control. An ancient civilization built the entire science of version control. They did not use computers. They carved it into stone. Then they vanished and took their knowledge with them.`,
 
-  `The machine room connects to a vast underground network: the Kethara Repository. Thousands of data chambers, each holding a fragment of their civilization's accumulated knowledge. But the Repository is corrupted. Sectors are dark. Branches are broken. The commit log ends mid-sentence, 3,000 years ago.
+  `The machine room connects to a vast underground network called the Kethara Repository. There are thousands of data chambers here. Each one holds a fragment of their accumulated knowledge. But the Repository is corrupted. Sectors are dark. Branches are broken. The commit log ends in the middle of a sentence from 3,000 years ago.
 
-Someone — or something — interrupted the Archive before it could be sealed.`,
+Something interrupted the Archive before it could be sealed.`,
 
-  `Your mission is clear: reactivate the Repository sector by sector. Recover the knowledge. Rebuild the commit history. Find out what happened to the civilization that built this place.
+  `Your mission is clear. You must reactivate the Repository sector by sector. You need to recover the knowledge and rebuild the commit history. You have to find out what happened to the civilization that built this place.
 
-You are not just learning their system. You are following their footsteps. You are a Ledger Specialist now — and every command you type brings a dead world back to life.`,
+You are not just learning their system. You are following their footsteps. You are a Ledger Specialist now. Every command you type brings a dead world back to life.`,
 
-  `As you power on your own terminal and connect it to the ancient interface, the screen flickers once. Then a single line appears:
+  `You power on your terminal and connect it to the ancient interface. The screen flickers once. Then a single line appears:
 
                     repository: KETHARA-ARCHIVE
                     status: CORRUPTED
-                    chapters recovered: 0 / 35
+                    chapters recovered: 0 / 45
                     
                     awaiting specialist input...
 
@@ -35,10 +33,15 @@ const ARCS = {
   2: { name: "ARC II: PARALLEL HISTORIES",label: "ARC II",  era: "era-0", eraName: "THE ANCIENT ARCHIVE",   icon: "&#9670;" },
   3: { name: "ARC III: THE CONVERGENCE",  label: "ARC III", era: "era-1", eraName: "THE AWAKENED CODEX",     icon: "&#9632;" },
   4: { name: "ARC IV: CRISIS PROTOCOL",   label: "ARC IV",  era: "era-1", eraName: "THE AWAKENED CODEX",     icon: "&#9632;" },
-  5: { name: "ARC V: THE DIGITAL ASCENT", label: "ARC V",   era: "era-2", eraName: "THE NEXUS TERMINAL",     icon: "&#9670;" }
+  5: { name: "ARC V: THE DIGITAL ASCENT", label: "ARC V",   era: "era-2", eraName: "THE NEXUS TERMINAL",     icon: "&#9670;" },
+  6: { name: "ARC VI: DEEP PROTOCOLS",    label: "ARC VI",  era: "era-2", eraName: "THE NEXUS TERMINAL",     icon: "&#9670;" }
 };
 
 const CHAPTERS = [
+
+  /* ================================================================
+     ARC I: THE AWAKENING
+  ================================================================ */
 
   {
     id: 0,
@@ -51,7 +54,7 @@ const CHAPTERS = [
     qType: "terminal",
     command: "git init",
     hint: "Two words. 'git' followed by a word meaning 'to start' or 'initiate'.",
-    explanation: `git init creates a hidden folder called .git inside your project directory. This folder is the brain of your version control system — it tracks every change, every commit, and every branch from this point forward. You only need to run it once per project. Without it, Git doesn't know your folder even exists.`,
+    explanation: `git init creates a hidden folder called .git inside your project directory. This folder is the brain of your version control system. It tracks every change, every commit, and every branch from this point forward. You only need to run it once per project. Without it, Git doesn't know your folder even exists.`,
     example: `$ git init\nInitialized empty Git repository in /project/.git/`,
     fieldNote: { cmd: "git init", desc: "Wake the repository. Run once per project." }
   },
@@ -156,6 +159,8 @@ const CHAPTERS = [
     fieldNote: { cmd: "git log --oneline", desc: "Compact history. One line per commit." }
   },
 
+  /* ARC II: PARALLEL HISTORIES */
+
   {
     id: 7,
     arc: 2,
@@ -258,6 +263,8 @@ const CHAPTERS = [
     example: `$ git branch -a\n* excavation\n  main\n  remotes/origin/main\n  remotes/origin/feature-x`,
     fieldNote: { cmd: "git branch -a", desc: "List ALL branches, local + remote." }
   },
+
+  /* ARC III: THE CONVERGENCE */
 
   {
     id: 13,
@@ -387,6 +394,8 @@ const CHAPTERS = [
     fieldNote: { cmd: "<<<<<<< / ======= / >>>>>>>", desc: "Conflict markers. Edit file, then add + commit." }
   },
 
+  /* ARC IV: CRISIS PROTOCOL */
+
   {
     id: 20,
     arc: 4,
@@ -476,6 +485,8 @@ const CHAPTERS = [
     example: `# Stash: "I will hide this for now."\n# Commit: "I am recording this state forever."`,
     fieldNote: { cmd: "Metaphors", desc: "Stash=drawer, Commit=photo, Branch=copy, Revert=errata" }
   },
+
+  /* ARC V: THE DIGITAL ASCENT */
 
   {
     id: 25,
@@ -659,8 +670,6 @@ const CHAPTERS = [
     fieldNote: { cmd: "Full Workflow", desc: "The complete cycle from cloning to pushing changes." }
   },
 
-  /* NEW CHAPTERS — continuing the story after the Repository is restored */
-
   {
     id: 35,
     arc: 5,
@@ -839,6 +848,226 @@ const CHAPTERS = [
     explanation: `A well-written commit message is one of the most valuable habits a developer can build. The subject line should be short and use the imperative mood so it reads as an instruction. The most important content is the reason behind the change, not just what changed, because the diff already shows the what. For complex commits, a body paragraph adds the context that future developers will need.`,
     example: `# Good commit message format:\n\nFix memory leak in sector recovery loop\n\nThe recovery function was holding references to\ncompleted tablet objects, preventing garbage\ncollection. This caused the process to consume\nan extra 200MB over a 24-hour run.\n\n# Bad:\n$ git commit -m "fixed stuff"`,
     fieldNote: { cmd: "Commit message style", desc: "Imperative, short subject, explain the WHY." }
+  },
+
+  /* ARC VI: DEEP PROTOCOLS
+     New question types: hotspot, output-read, multiline-fill, truefalse-set
+  */
+
+  {
+    id: 45,
+    arc: 6,
+    nodeType: "normal",
+    title: "The Flag Chamber",
+    story: `A sealed inner chamber has just opened. Its walls are covered in command fragments, each containing multiple parts: the base command, the flags, the arguments. The architect explains that experienced specialists read commands at a glance, instantly recognising what each part does. We are given a complete command and asked to tap the exact part that controls the output format.`,
+    task: "In the command below, tap the token that limits the log output to 5 commits.",
+    xp: 15,
+    qType: "hotspot",
+    tokens: ["git", "log", "--oneline", "-5", "main"],
+    answer: "-5",
+    hint: "Flags that take a number usually control quantity or depth.",
+    explanation: `The -5 flag tells git log to show only the most recent 5 commits. You can use any number here. Combined with --oneline, this is a very fast way to inspect recent history without scrolling through the entire log.`,
+    example: `$ git log --oneline -5 main\nc3d9f11 Fix sector alignment\na4f3b2e Recover fragment seven\n...`,
+    fieldNote: { cmd: "git log -N", desc: "Limit log output to the N most recent commits." }
+  },
+
+  {
+    id: 46,
+    arc: 6,
+    nodeType: "normal",
+    title: "Reading the Output",
+    story: `The archive system has printed a status report to the terminal. Our junior specialist is confused by the symbols in the output and cannot determine which file is staged and which is modified but not yet staged. The architect reminds us that every character in the output carries a precise meaning. We must read it correctly before taking any action.`,
+    task: "Look at this 'git status' output and answer: which file is staged for commit?",
+    xp: 15,
+    qType: "output-read",
+    output: `On branch main\nChanges to be committed:\n  (use "git restore --staged <file>..." to unstage)\n\n\tmodified:   archive.txt\n\nChanges not staged for commit:\n  (use "git add <file>..." to update)\n\n\tmodified:   notes.txt`,
+    question: "Which file is staged and ready to be committed?",
+    options: ["archive.txt", "notes.txt", "Both files", "Neither file"],
+    answer: "archive.txt",
+    hint: "Look for the section titled 'Changes to be committed'. Files listed there are in the staging area.",
+    explanation: `In git status output, files listed under 'Changes to be committed' are in the staging area and will be included in the next commit. Files under 'Changes not staged for commit' have been modified but not yet staged. Reading this output carefully prevents committing the wrong files.`,
+    example: `$ git status\nChanges to be committed:\n\tmodified:   archive.txt   <-- this one is staged\nChanges not staged for commit:\n\tmodified:   notes.txt     <-- this one is not`,
+    fieldNote: { cmd: "git status sections", desc: "Staged = 'to be committed'. Unstaged = 'not staged'." }
+  },
+
+  {
+    id: 47,
+    arc: 6,
+    nodeType: "branch",
+    title: "Tracking a Remote Branch",
+    story: `A new team member has cloned the repository and created a local branch called 'signal-boost'. She wants to link it to a remote branch of the same name on the origin server so that future push and pull commands know where to go automatically. The architect shows her the command that sets up this upstream connection in a single move.`,
+    task: "Push the local branch and set origin as its upstream in one command.",
+    xp: 15,
+    qType: "fill",
+    template: "git push ___ origin signal-boost",
+    blanks: ["-u"],
+    hint: "The flag is a single letter that stands for 'upstream'. It is lowercase.",
+    explanation: `git push -u origin <branch> pushes your local branch to the remote and simultaneously sets the remote branch as the upstream tracking branch. After running this once, you can use just 'git push' and 'git pull' with no arguments on that branch, because Git already knows where to look.`,
+    example: `$ git push -u origin signal-boost\nBranch 'signal-boost' set up to track remote branch 'signal-boost' from 'origin'.`,
+    fieldNote: { cmd: "git push -u origin <branch>", desc: "Push and set upstream tracking in one step." }
+  },
+
+  {
+    id: 48,
+    arc: 6,
+    nodeType: "normal",
+    title: "The Hotspot: Commit Hash",
+    story: `The archive has printed a detailed log entry for the most recent commit. The system needs us to confirm we can identify the unique identifier that pinpoints this exact moment in the timeline. Every commit in the Repository is assigned a hash, a long string of characters that no other commit shares. Knowing how to read it is essential for cherry-picking, reverting, and all advanced operations.`,
+    task: "In this log entry, tap the commit hash.",
+    xp: 15,
+    qType: "hotspot",
+    tokens: ["commit", "3a8c5f9", "Author:", "Lena", "Date:", "Mon"],
+    answer: "3a8c5f9",
+    hint: "A commit hash looks like a short string of random letters and numbers.",
+    explanation: `Every Git commit is identified by a SHA-1 hash. In practice you only need the first 7 characters to reference a commit uniquely in most repositories. This short hash appears in git log --oneline output and can be passed to commands like git show, git revert, and git cherry-pick.`,
+    example: `$ git log --oneline\n3a8c5f9 Add signal calibration\na4f3b2e Recover fragment seven`,
+    fieldNote: { cmd: "Commit hash", desc: "A unique 40-char ID. First 7 chars are usually enough." }
+  },
+
+  {
+    id: 49,
+    arc: 6,
+    nodeType: "normal",
+    title: "True or False: Reset Modes",
+    story: `The training construct in the deep archive has prepared a batch evaluation. It presents several statements about the three modes of git reset and asks us to mark each one as correct or incorrect. Understanding these distinctions is critical because using the wrong mode can cause permanent data loss.`,
+    task: "Mark each statement about git reset as TRUE or FALSE.",
+    xp: 25,
+    qType: "truefalse-set",
+    statements: [
+      { text: "git reset --soft keeps changes in the staging area.", answer: true },
+      { text: "git reset --hard deletes uncommitted changes permanently.", answer: true },
+      { text: "git reset --mixed stages your changes but moves the HEAD pointer.", answer: false },
+      { text: "git reset only affects your local repository.", answer: true }
+    ],
+    hint: "--mixed (the default) keeps changes in the working directory but removes them from staging. It does not stage them.",
+    explanation: `The three reset modes differ in how far back they roll things: --soft moves only the HEAD pointer and leaves the staging area intact. --mixed (the default) also clears the staging area but leaves your files on disk. --hard clears the staging area and also discards all file modifications, making it the most dangerous option. All three only affect your local machine.`,
+    example: `$ git reset --soft HEAD~1   # HEAD moves, staging area kept\n$ git reset --mixed HEAD~1  # HEAD moves, staging area cleared\n$ git reset --hard HEAD~1   # HEAD moves, files reverted too`,
+    fieldNote: { cmd: "reset --soft/--mixed/--hard", desc: "Three modes with increasing destructiveness." }
+  },
+
+  {
+    id: 50,
+    arc: 6,
+    nodeType: "normal",
+    title: "The Multi-Step Terminal",
+    story: `The deepest section of the archive requires a multi-step unlock sequence. A single command is not enough. We must execute a precise chain of three commands in order: create a new file, stage it, and commit it. The system will only unlock the next chamber if all three commands are entered correctly and in sequence.`,
+    task: "Complete all three steps of the workflow: stage a new file called 'signal.txt', then commit with the message 'Add signal'.",
+    xp: 25,
+    qType: "sequence",
+    steps: [
+      { prompt: "Step 1 of 3 — Stage signal.txt", command: "git add signal.txt", label: "Stage the file" },
+      { prompt: "Step 2 of 3 — Commit with a message", command: `git commit -m "Add signal"`, label: "Commit the file" },
+      { prompt: "Step 3 of 3 — View the new log entry", command: "git log --oneline", label: "Verify the commit" }
+    ],
+    hint: "Each step must be completed before the next one unlocks. Use exact command syntax.",
+    explanation: `This three-step sequence is the complete core workflow of Git: stage with git add, save with git commit, then verify with git log. Practicing this sequence until it becomes automatic is the foundation of every more advanced Git skill you will develop from here.`,
+    example: `$ git add signal.txt\n$ git commit -m "Add signal"\n$ git log --oneline\nc3d9f11 Add signal`,
+    fieldNote: { cmd: "add + commit + log", desc: "The core three-step verification loop." }
+  },
+
+  {
+    id: 51,
+    arc: 6,
+    nodeType: "normal",
+    title: "The Flag Identifier",
+    story: `A directory of command flags has been found in the archive wall. The inscriptions list the flags but their purposes have been shuffled by the corruption. We must pair each flag with the correct description before the system will allow us to proceed. The flags cover several commands that are used together frequently in daily workflows.`,
+    task: "Match each Git flag to its correct description.",
+    xp: 20,
+    qType: "match",
+    pairs: [
+      { left: "-u (push)",     right: "Set the upstream tracking branch" },
+      { left: "--staged (diff)", right: "Compare staging area to last commit" },
+      { left: "--no-edit",     right: "Amend last commit without changing message" },
+      { left: "--graph (log)", right: "Show branch structure visually in terminal" }
+    ],
+    hint: "Think about what each flag modifies: where to push, what to compare, whether to edit, how to display.",
+    explanation: `Flags give standard Git commands extra precision. -u on push sets the tracking relationship. --staged on diff lets you review what is about to be committed. --no-edit on commit amend keeps the existing message. --graph on log draws the branch structure as ASCII art in the terminal.`,
+    example: `$ git push -u origin main\n$ git diff --staged\n$ git commit --amend --no-edit\n$ git log --oneline --graph --all`,
+    fieldNote: { cmd: "Common flags", desc: "-u, --staged, --no-edit, --graph each add precision." }
+  },
+
+  {
+    id: 52,
+    arc: 6,
+    nodeType: "normal",
+    title: "The Hotspot: Dangerous Flag",
+    story: `A warning glyph appears on the terminal wall. The architect explains that one of the tokens in this command is responsible for erasing all uncommitted changes permanently. There is no undo. Specialists who understand the command structure never run this accidentally because they can identify the destructive element at a glance. We need to do the same.`,
+    task: "Tap the token in the command below that causes all uncommitted changes to be lost.",
+    xp: 20,
+    qType: "hotspot",
+    tokens: ["git", "reset", "--hard", "HEAD~1"],
+    answer: "--hard",
+    hint: "It is a flag, not a command or a reference. Think about which mode of reset destroys data.",
+    explanation: `The --hard flag is what makes git reset destructive. Without it, reset is relatively safe. The --hard mode tells Git to not only move the HEAD pointer but also to overwrite the contents of your working directory and staging area to match the target commit. Everything that was not committed is lost.`,
+    example: `# Safe:\n$ git reset --soft HEAD~1   # keeps your work\n\n# Destructive:\n$ git reset --hard HEAD~1   # destroys your work`,
+    fieldNote: { cmd: "--hard flag", desc: "Makes reset destructive. Overwrites all local changes." }
+  },
+
+  {
+    id: 53,
+    arc: 6,
+    nodeType: "normal",
+    title: "Shortlog and Contributors",
+    story: `The expedition leadership wants a summary of who contributed what to the Repository before the restoration. Reading through every commit one by one would take too long. The archive records contain a condensed view of contributions grouped by author that we can generate from the command line. The architect shows us the command that produces this report automatically.`,
+    task: "View a summary of commits grouped by author.",
+    xp: 15,
+    qType: "binary",
+    question: "Which command shows commit counts grouped by contributor?",
+    options: ["git shortlog -sn", "git log --authors"],
+    answer: "git shortlog -sn",
+    hint: "The -s flag means summary and the -n flag sorts by number of commits.",
+    explanation: `git shortlog -sn produces a sorted list of contributors along with how many commits each person has made. The -s flag suppresses the individual commit messages and shows only the count. The -n flag sorts the output from most to fewest commits. This is useful for understanding who is most active on a project.`,
+    example: `$ git shortlog -sn\n    42  Lena Vasquez\n    31  Rainier-PS\n    18  Dev Okonkwo`,
+    fieldNote: { cmd: "git shortlog -sn", desc: "Summarise commits per author, sorted by count." }
+  },
+
+  {
+    id: 54,
+    arc: 6,
+    nodeType: "normal",
+    title: "Worktree: Two Places at Once",
+    story: `A senior architect from the original civilization left a final lesson encoded in the deepest chamber. She had discovered a way to work on two branches simultaneously without losing the state of either. This technique creates a second working directory on disk that is linked to the same repository but checked out to a different branch. It is one of the most powerful tools available to a Ledger Specialist.`,
+    task: "Which command creates a second working directory for the 'hotfix' branch?",
+    xp: 20,
+    qType: "choice",
+    options: [
+      "git worktree add ../hotfix-dir hotfix",
+      "git checkout --worktree hotfix",
+      "git branch --copy hotfix ../hotfix-dir",
+      "git clone --branch hotfix . ../hotfix-dir"
+    ],
+    answer: "git worktree add ../hotfix-dir hotfix",
+    hint: "The worktree subcommand is followed by the path for the new directory and then the branch name.",
+    explanation: `git worktree add <path> <branch> creates a new directory on disk that is linked to your existing repository but checked out to a different branch. You can open a terminal in that directory and work on the hotfix branch while your main directory stays on main. This avoids the need to stash, switch, work, and switch back repeatedly.`,
+    example: `$ git worktree add ../hotfix-dir hotfix\nPreparing worktree (checking out 'hotfix')\nHEAD is now at c3d9f11\n\n# List all worktrees:\n$ git worktree list`,
+    fieldNote: { cmd: "git worktree add <path> <branch>", desc: "Work on two branches simultaneously in separate folders." }
+  },
+
+  {
+    id: 55,
+    arc: 6,
+    nodeType: "merge",
+    title: "The Complete Specialist",
+    story: `The final chamber of the deep archive has opened. The oldest inscription in the entire Repository is carved here, and it is not a command. It is a principle. The civilization's greatest specialists were not those who memorised the most commands. They were those who understood why each command existed, what problem it solved, and when to reach for it over the alternatives. You have now traversed the full depth of the system. The final challenge is a comprehensive review.`,
+    task: "Arrange these scenarios in order from the safest operation to the most potentially destructive.",
+    xp: 35,
+    qType: "sort",
+    items: [
+      "git reset --hard HEAD~3",
+      "git log --oneline",
+      "git revert HEAD",
+      "git commit --amend (on a pushed branch)"
+    ],
+    answer: [
+      "git log --oneline",
+      "git revert HEAD",
+      "git commit --amend (on a pushed branch)",
+      "git reset --hard HEAD~3"
+    ],
+    hint: "Reading is always safe. Creating a new reversal commit is safer than rewriting history. Hard reset is the most dangerous.",
+    explanation: `Git operations exist on a spectrum of risk. Read-only operations like git log are always completely safe. git revert is safe even on shared branches because it adds a new commit rather than rewriting history. Amending a pushed commit rewrites its hash and will cause problems for anyone who has already pulled that commit. Hard reset is the most dangerous because it permanently destroys local changes and cannot be undone through normal means.`,
+    example: `# From safest to most dangerous:\n# 1. git log --oneline       (read only, no changes)\n# 2. git revert HEAD         (new commit, history preserved)\n# 3. git commit --amend      (rewrites history, risky if shared)\n# 4. git reset --hard HEAD~3 (destroys uncommitted work)`,
+    fieldNote: { cmd: "Risk spectrum", desc: "log < revert < amend < reset --hard. Know the danger level." }
   }
 
 ];
