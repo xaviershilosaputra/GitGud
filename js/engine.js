@@ -51,6 +51,9 @@ const DEFAULT_STATE = {
 
 let STATE = { ...DEFAULT_STATE };
 
+/* ----------------------------------------------------------------
+   ERA SYSTEM — driven by GAME_CONFIG.eras
+---------------------------------------------------------------- */
 function applyEra(eraKey) {
   const cfg = GAME_CONFIG.eras;
   Object.keys(cfg).forEach(k => {
@@ -75,7 +78,9 @@ function applyEra(eraKey) {
   }
 }
 
-/* PROLOGUE */
+/* ----------------------------------------------------------------
+   PROLOGUE
+---------------------------------------------------------------- */
 const PROLOGUE = {
   index: 0,
 
@@ -128,11 +133,14 @@ const PROLOGUE = {
   }
 };
 
-/* TOUR — fixed highlight system using a positioned ring element */
+/* ----------------------------------------------------------------
+   TOUR — fixed highlight system using a positioned ring element
+---------------------------------------------------------------- */
 const TOUR = {
   step: 0,
-  _ov:  null,
+  _ov:   null,
   _ring: null,
+  _ro:   null, // ResizeObserver watching the current target
   steps: [
     { target: '#story-panel',   title: 'The Story',         body: 'Each chapter begins with a narrative that sets the scene. Read it to understand the context before attempting the task.',                                  position: 'bottom' },
     { target: '#task-box',      title: 'Your Mission',      body: 'The mission box tells you exactly what to do. Some chapters ask you to type a command, others ask you to choose, sort, or match.',                       position: 'bottom' },
@@ -167,10 +175,12 @@ const TOUR = {
       if (e.key === 'ArrowRight' || e.key === 'Enter') this.advance();
     });
 
+    // Dimming backdrop — four rectangles leave a gap-free hole via clip-path on box
     const backdrop = document.createElement('div');
     backdrop.id = 'tour-backdrop';
     ov.appendChild(backdrop);
 
+    // Crisp highlight ring that sits exactly on the target
     const ring = document.createElement('div');
     ring.id = 'tour-ring';
     ring.setAttribute('aria-hidden', 'true');
@@ -213,34 +223,35 @@ const TOUR = {
       `<span class="tour-dot${i === this.step ? ' active' : ''}" aria-hidden="true"></span>`
     ).join('');
 
+    // Disconnect any previous observer
+    if (this._ro) { this._ro.disconnect(); this._ro = null; }
+
     const target = document.querySelector(s.target);
     if (!target) return;
 
-    const pad  = 6;
-    const rect = target.getBoundingClientRect();
-    const cs   = getComputedStyle(target);
-    const br   = parseFloat(cs.borderRadius) || 0;
+    const updateRing = () => {
+      const pad  = 6;
+      const rect = target.getBoundingClientRect();
+      const cs   = getComputedStyle(target);
+      const br   = parseFloat(cs.borderRadius) || 0;
+      const ring = this._ring || document.getElementById('tour-ring');
+      if (!ring) return;
+      ring.style.top          = `${rect.top    - pad}px`;
+      ring.style.left         = `${rect.left   - pad}px`;
+      ring.style.width        = `${rect.width  + pad * 2}px`;
+      ring.style.height       = `${rect.height + pad * 2}px`;
+      ring.style.borderRadius = `${br + pad}px`;
+      ring.style.boxShadow    = '0 0 0 9999px rgba(0,0,0,0.72)';
+      this._positionBox(rect, s.position);
+    };
 
-    // Position ring precisely on target
-    const ring = this._ring || document.getElementById('tour-ring');
-    ring.style.cssText = `
-      top:    ${rect.top    - pad}px;
-      left:   ${rect.left   - pad}px;
-      width:  ${rect.width  + pad * 2}px;
-      height: ${rect.height + pad * 2}px;
-      border-radius: ${br + pad}px;
-    `;
+    updateRing();
 
-    const backdrop = document.getElementById('tour-backdrop');
-    backdrop.style.cssText = `
-      position: fixed;
-      inset: 0;
-      pointer-events: all;
-    `;
-
-    ring.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.72)';
-
-    this._positionBox(rect, s.position);
+    // Watch target for size changes (typewriter growing the story panel, etc.)
+    if (window.ResizeObserver) {
+      this._ro = new ResizeObserver(updateRing);
+      this._ro.observe(target);
+    }
 
     const box = document.getElementById('tour-box');
     requestAnimationFrame(() => box?.focus());
@@ -275,6 +286,7 @@ const TOUR = {
     SFX.play('click');
     const ov = document.getElementById('tour-overlay');
     if (ov) ov.style.display = 'none';
+    if (this._ro) { this._ro.disconnect(); this._ro = null; }
     STATE.tourDone = true;
     GAME.saveState();
   }
@@ -283,7 +295,9 @@ const TOUR = {
 let MATCH = { selected: null, col: null, matches: 0 };
 let SORT  = { dragging: null, dragEl: null };
 
-/* GAME ENGINE */
+/* ----------------------------------------------------------------
+   GAME ENGINE
+---------------------------------------------------------------- */
 const GAME = {
   _twId: 0,
 
@@ -364,8 +378,20 @@ const GAME = {
   loadState() {
     try {
       const raw = localStorage.getItem('game_engine_v1');
-      if (raw) STATE = { ...DEFAULT_STATE, ...JSON.parse(raw) };
-    } catch(e) {}
+      if (raw) {
+        const saved = JSON.parse(raw);
+        STATE = { ...DEFAULT_STATE, ...saved };
+        const maxStep = GAME_CONFIG.chapters.length;
+        if (typeof STATE.currentStep !== 'number' || STATE.currentStep < 0 || STATE.currentStep > maxStep) {
+          STATE.currentStep = 0;
+        }
+        if (!Array.isArray(STATE.completed))  STATE.completed  = [];
+        if (!Array.isArray(STATE.fieldNotes)) STATE.fieldNotes = [];
+      }
+    } catch(e) {
+      STATE = { ...DEFAULT_STATE };
+      try { localStorage.removeItem('game_engine_v1'); } catch(_) {}
+    }
     SFX.enabled = STATE.soundOn;
   },
 
@@ -423,6 +449,80 @@ const GAME = {
     const zone = document.getElementById('question-zone');
     zone.innerHTML = '';
 
+    // If chapter has a lesson, show it first as a dismissible inscription panel
+    if (ch.lesson) {
+      this.renderLesson(ch, zone);
+    } else {
+      this._renderQuestion(ch, zone);
+    }
+
+    this.updateHeader();
+    this.updateFieldNotes();
+  },
+
+  renderLesson(ch, zone) {
+    const panel = document.createElement('div');
+    panel.className = 'lesson-panel';
+    panel.setAttribute('role', 'region');
+    panel.setAttribute('aria-label', 'Lesson inscription');
+
+    const header = document.createElement('div');
+    header.className = 'lesson-header';
+    header.innerHTML = `<span class="lesson-label">&#9670; INSCRIPTION RECOVERED</span><span class="lesson-title">${escapeHtml(ch.lesson.title || ch.title)}</span>`;
+    panel.appendChild(header);
+
+    const body = document.createElement('div');
+    body.className = 'lesson-body';
+
+    ch.lesson.sections.forEach(sec => {
+      if (sec.type === 'text') {
+        const p = document.createElement('p');
+        p.className   = 'lesson-text';
+        p.textContent = sec.content;
+        body.appendChild(p);
+      } else if (sec.type === 'code') {
+        const pre = document.createElement('pre');
+        pre.className   = 'lesson-code';
+        pre.textContent = sec.content;
+        body.appendChild(pre);
+      } else if (sec.type === 'tip') {
+        const tip = document.createElement('div');
+        tip.className = 'lesson-tip';
+        tip.innerHTML = `<span class="lesson-tip-label">TIP</span><span>${escapeHtml(sec.content)}</span>`;
+        body.appendChild(tip);
+      } else if (sec.type === 'warning') {
+        const warn = document.createElement('div');
+        warn.className = 'lesson-warning';
+        warn.innerHTML = `<span class="lesson-tip-label">&#9888; CAUTION</span><span>${escapeHtml(sec.content)}</span>`;
+        body.appendChild(warn);
+      }
+    });
+
+    panel.appendChild(body);
+
+    const footer = document.createElement('div');
+    footer.className = 'lesson-footer';
+    const readyBtn = document.createElement('button');
+    readyBtn.className   = 'btn-ancient lesson-ready-btn';
+    readyBtn.textContent = 'I UNDERSTAND — TEST ME';
+    readyBtn.setAttribute('aria-label', 'Dismiss lesson and attempt the question');
+    readyBtn.addEventListener('click', () => {
+      SFX.play('pageFlip');
+      panel.classList.add('lesson-dismissing');
+      setTimeout(() => {
+        zone.innerHTML = '';
+        this._renderQuestion(ch, zone);
+      }, 350);
+    });
+    footer.appendChild(readyBtn);
+    panel.appendChild(footer);
+    zone.appendChild(panel);
+
+    // Auto-focus the button so keyboard users can proceed immediately
+    requestAnimationFrame(() => readyBtn.focus());
+  },
+
+  _renderQuestion(ch, zone) {
     const renderers = {
       terminal:        () => this.renderTerminal(ch, zone),
       binary:          () => this.renderBinary(ch, zone),
@@ -437,9 +537,6 @@ const GAME = {
       sequence:        () => this.renderSequence(ch, zone),
     };
     if (renderers[ch.qType]) renderers[ch.qType]();
-
-    this.updateHeader();
-    this.updateFieldNotes();
   },
 
   typeWriter(el, text, speed = 18) {
@@ -658,7 +755,7 @@ const GAME = {
     setTimeout(() => t.remove(), 2400);
   },
 
-  /* Question renderers */
+  /* ---------- Question renderers ---------- */
 
   renderTerminal(ch, zone) {
     const prompt = GAME_CONFIG.terminalPrompt;
@@ -682,11 +779,39 @@ const GAME = {
       </div>`;
     const inp = document.getElementById('user-input');
     inp.focus();
+
+    // Command history — arrow up/down scrolls through previous attempts
+    // No autocomplete: history only recalls what the user actually typed
+    const history = [];
+    let histIdx   = -1;
+    let draft     = '';
+
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!history.length) return;
+        if (histIdx === -1) draft = inp.value;
+        histIdx = Math.min(histIdx + 1, history.length - 1);
+        inp.value = history[histIdx];
+        inp.selectionStart = inp.selectionEnd = inp.value.length;
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (histIdx === -1) return;
+        histIdx--;
+        inp.value = histIdx === -1 ? draft : history[histIdx];
+        inp.selectionStart = inp.selectionEnd = inp.value.length;
+      }
+    });
+
     inp.addEventListener('keypress', e => {
       if (e.key !== 'Enter') return;
       SFX.play('click');
       const val = inp.value.trim();
       if (!val) return;
+      history.unshift(val);
+      if (history.length > 20) history.pop();
+      histIdx = -1;
+      draft   = '';
       this.appendTerminal(`$ ${val}`, 'tl-dim');
       inp.value = '';
       if (val.toLowerCase() === ch.command.toLowerCase()) {
@@ -1133,11 +1258,37 @@ const GAME = {
         </div>`;
       const inp = document.getElementById('user-input');
       inp.focus();
+
+      const history = [];
+      let histIdx   = -1;
+      let draft     = '';
+
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (!history.length) return;
+          if (histIdx === -1) draft = inp.value;
+          histIdx = Math.min(histIdx + 1, history.length - 1);
+          inp.value = history[histIdx];
+          inp.selectionStart = inp.selectionEnd = inp.value.length;
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (histIdx === -1) return;
+          histIdx--;
+          inp.value = histIdx === -1 ? draft : history[histIdx];
+          inp.selectionStart = inp.selectionEnd = inp.value.length;
+        }
+      });
+
       inp.addEventListener('keypress', e => {
         if (e.key !== 'Enter') return;
         SFX.play('click');
         const val = inp.value.trim();
         if (!val) return;
+        history.unshift(val);
+        if (history.length > 20) history.pop();
+        histIdx = -1;
+        draft   = '';
         this.appendTerminal(`$ ${val}`, 'tl-dim');
         inp.value = '';
         if (val.toLowerCase() === stepObj.command.toLowerCase()) {
