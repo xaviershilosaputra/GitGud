@@ -1,5 +1,4 @@
 const GAME_CONFIG = {
-
   name:        "GitGud",
   tagline:     "An Archaeological Expedition",
   description: "Master Git version control through story-driven discovery.",
@@ -107,8 +106,10 @@ const GAME_CONFIG = {
     }
   },
 
+  /* ---------- Google Fonts to load ---------- */
   fonts: "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap",
 
+  /* ---------- Prologue slides ---------- */
   prologueSlides: [
     `The year is unknown. The expedition team spent six months digging at the Kethara Plateau before they found it. It was buried under forty feet of stone and sand. This structure is different from anything on record. It is not a tomb. It is not a temple. It is a machine room.
 
@@ -151,6 +152,16 @@ Take a breath. The expedition begins now.`
     /* ARC I: THE AWAKENING */
 
     {
+      lesson: {
+        title: "What is Git and why does it exist?",
+        sections: [
+          { type: "text", content: "Git is a version control system. A tool that records every change you make to your files over time. Think of it like unlimited undo, combined with a complete diary of your project history." },
+          { type: "text", content: "Before you can track anything, Git needs a place to store that history. Running git init creates a hidden folder called .git inside your project. This folder is the brain: it stores every snapshot, every author, every timestamp." },
+          { type: "code", content: "$ git init\nInitialized empty Git repository in /project/.git/" },
+          { type: "tip",  content: "You only ever run git init once per project, in the root folder. After that, Git watches everything beneath it automatically." },
+          { type: "warning", content: "Never manually edit or delete the .git folder. Doing so corrupts the entire project history." }
+        ]
+      },
       id: 0, arc: 1, nodeType: "normal",
       title: "The First Inscription",
       story: "The entrance to the chamber is silent and the air is heavy with dust. We set up our equipment on a stone slab while torchlight reflects off the walls. There are carvings everywhere, but the system is currently dormant. Our team's linguist identified two specific words near the entrance. She explained that before the archive can record any new data, we have to initialize the system to begin tracking.",
@@ -163,6 +174,15 @@ Take a breath. The expedition begins now.`
     },
 
     {
+      lesson: {
+        title: "Reading the repository\'s current state",
+        sections: [
+          { type: "text", content: "Before doing anything in Git, it is a good habit to ask: what is actually happening right now? The git status command gives you a live snapshot of your working directory." },
+          { type: "text", content: "Git puts files into three buckets. Untracked means Git has never seen this file. Modified means the file exists in history but changed since the last commit. Staged means it is queued and ready to be permanently saved." },
+          { type: "code", content: "$ git status\nOn branch main\n\nChanges to be committed:\n  modified:   archive.txt    <-- staged\n\nChanges not staged for commit:\n  modified:   notes.txt      <-- modified, not staged\n\nUntracked files:\n  new-file.txt               <-- brand new, not tracked" },
+          { type: "tip",  content: "Professional developers run git status constantly — before staging, before committing, before switching branches. It costs nothing and prevents many mistakes." }
+        ]
+      },
       id: 1, arc: 1, nodeType: "normal",
       title: "The Observer's Rite",
       story: "The system is active now, though the chamber remains dark. Files are scattered across the workspace, including new documents and others that were modified recently. We have to follow a strict rule inscribed above the entrance: always check the state of the archive before taking action. Acting without checking first could lead to overwriting important history.",
@@ -175,6 +195,15 @@ Take a breath. The expedition begins now.`
     },
 
     {
+      lesson: {
+        title: "The staging area — Git\'s preparation zone",
+        sections: [
+          { type: "text", content: "Git does not save changes automatically. Instead it uses a two-step process. First you stage the files you want to include. Then you commit (permanently save) just those staged files. This separation is deliberate and powerful." },
+          { type: "text", content: "Why stage at all? Imagine you fixed two unrelated bugs at the same time. Staging lets you commit them separately with distinct messages, keeping your history clean — even though you worked on them together." },
+          { type: "code", content: "# Stage a specific file\n$ git add history.txt\n\n# Verify what is now staged\n$ git status" },
+          { type: "tip",  content: "git add only selects files for the next commit. Nothing is permanent until you run git commit." }
+        ]
+      },
       id: 2, arc: 1, nodeType: "normal",
       title: "Staging the Fragment",
       story: "In the second room, we found a clay tablet labeled \"history.txt\" that is warm to the touch. It contains data that the system has not captured yet. The interface does not automatically save every change we make. Instead, we must manually select which fragments to preserve. This process allows us to be intentional about what enters the permanent record.",
@@ -188,6 +217,16 @@ Take a breath. The expedition begins now.`
     },
 
     {
+      lesson: {
+        title: "Committing — making your work permanent",
+        sections: [
+          { type: "text", content: "A commit is a permanent, timestamped snapshot of everything you staged. Once committed, that state of your project exists forever in the history — you can always return to it." },
+          { type: "text", content: "Every commit requires a message. The -m flag lets you provide it inline. The message should describe what changed and, more importantly, why." },
+          { type: "code", content: "$ git commit -m \"Recovered fragment\"\n[main (root-commit) a4f3b2e] Recovered fragment\n 1 file changed, 12 insertions(+)" },
+          { type: "tip",  content: "Use the imperative mood: \'Add login page\', not \'Added login page\'. This convention makes history read like a list of instructions." },
+          { type: "warning", content: "Committing without staging does nothing. Run git status first to confirm you have staged changes." }
+        ]
+      },
       id: 3, arc: 1, nodeType: "normal",
       title: "The First Snapshot",
       story: "The tablet is staged and ready for the system. Our lead researcher explains that committing a change makes it a permanent part of the timeline. Every saved fragment receives a timestamp and a message explaining why it was preserved. The creators of this place were very clear that every entry must have a stated purpose.",
@@ -200,6 +239,15 @@ Take a breath. The expedition begins now.`
     },
 
     {
+      lesson: {
+        title: "Staging everything at once",
+        sections: [
+          { type: "text", content: "When you have many files to stage and want to include all of them, git add . stages everything in the current directory and all subdirectories at once." },
+          { type: "code", content: "# Stage everything\n$ git add .\n\n# The dot means current directory and below\n# It respects your .gitignore automatically" },
+          { type: "tip",  content: "git add . is the standard shorthand. Most real-world workflows use it for nearly every commit." },
+          { type: "warning", content: "Staging everything blindly can accidentally include files you did not mean to commit, such as credentials or build artifacts. Always run git status after to review what you staged." }
+        ]
+      },
       id: 4, arc: 1, nodeType: "normal",
       title: "Stage Everything",
       story: "A new door opens to reveal twelve tablets glowing simultaneously. Manually processing each one would be inefficient. Fortunately, the system includes a shorthand command to stage every modified and new file in the directory at once. This allows us to move much deeper into the archive without wasting time.",
@@ -214,6 +262,15 @@ Take a breath. The expedition begins now.`
     },
 
     {
+      lesson: {
+        title: "Reading your project\'s full history",
+        sections: [
+          { type: "text", content: "Every commit you have ever made is stored permanently. git log shows them in reverse chronological order — the most recent change appears at the top." },
+          { type: "code", content: "$ git log\ncommit a4f3b2e (HEAD -> main)\nAuthor: Lena <lena@dig.site>\nDate:   Mon Jan 1 09:00:00 2025\n\n    Recovered fragment\n\ncommit 3c9d1aa\nAuthor: Lena <lena@dig.site>\nDate:   Sun Dec 31 18:30:00 2024\n\n    Initialize repository" },
+          { type: "text", content: "Each entry shows the full commit hash (a unique ID), the author, the date, and the message. In large projects this list can be very long, which is why a compact view exists." },
+          { type: "tip",  content: "Press Q to exit the log when it is long enough to require scrolling in a real terminal." }
+        ]
+      },
       id: 5, arc: 1, nodeType: "normal",
       title: "Reading the Chronicle",
       story: "Deep in the archive room, we found a wall that functions as a complete history of the chamber. Every action taken here is recorded with a date, a name, and a specific reason. The ancient builders referred to this as the Chronicle. A prominent inscription at the top suggests that understanding the past is the only way to navigate the future effectively.",
@@ -226,6 +283,14 @@ Take a breath. The expedition begins now.`
     },
 
     {
+      lesson: {
+        title: "Compact history and combined flags",
+        sections: [
+          { type: "text", content: "The full git log output is detailed but verbose. The --oneline flag strips each entry to just the short hash and message — one line per commit. This is what most developers use when scanning recent work." },
+          { type: "code", content: "$ git log --oneline\na4f3b2e Recovered fragment\n3c9d1aa Initialize repository\n\n# With a visual branch graph:\n$ git log --oneline --graph --all\n* a4f3b2e (HEAD -> main) Recovered fragment\n* 3c9d1aa Initialize repository" },
+          { type: "warning", content: "--short is not a real git log flag. It looks plausible but does not exist. Always verify unfamiliar flags before relying on them." }
+        ]
+      },
       id: 6, arc: 1, nodeType: "normal",
       title: "The Compact View",
       story: "The Chronicle wall is massive and contains thousands of entries. Reading every detail would take far too long, but Lena found a symbol in the corner that reveals a compact version of the record. It displays only one line per entry. The architects clearly designed the system for efficiency when scanning through long periods of history.",
@@ -243,6 +308,15 @@ Take a breath. The expedition begins now.`
     /* ARC II: PARALLEL HISTORIES */
 
     {
+      lesson: {
+        title: "Branches — parallel timelines for safe experimentation",
+        sections: [
+          { type: "text", content: "A branch is a separate, independent line of development. You make changes freely on a branch without ever touching the main version. If the experiment works, you merge it back. If it fails, you delete the branch." },
+          { type: "text", content: "Think of the main branch as published work. Branches are your drafts. Professional teams run dozens of branches simultaneously — one per feature, one per bug fix." },
+          { type: "code", content: "# Create a branch (does NOT switch to it)\n$ git branch excavation\n\n# Confirm it exists — asterisk shows current branch\n$ git branch\n* main\n  excavation" },
+          { type: "warning", content: "git branch only creates the branch. You remain on main until you explicitly switch. Switching is covered in the very next chapter." }
+        ]
+      },
       id: 7, arc: 2, nodeType: "branch",
       title: "The Fork in the Stone",
       story: "The passage ahead splits into two tunnels. The eastern tunnel is the stable primary archive, while the western tunnel is marked as an experimental branch. Our team geologist noted that the builders did not work in a single linear sequence. Instead, they created parallel copies of the record to experiment without risking the main archive. We need to create a branch of our own to proceed.",
