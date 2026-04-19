@@ -1,4 +1,3 @@
-/* BASE VARIABLES (overridden by engine.js) */
 :root {
   --bg:           #f5edd6;
   --bg2:          #ede4c8;
@@ -184,6 +183,16 @@ body::before {
   color: var(--text-dim);
 }
 
+@keyframes chiseledge {
+  0%   { transform: scaleX(0) skewX(-2deg); opacity: 0.7; }
+  60%  { transform: scaleX(1.04) skewX(0deg); opacity: 1; }
+  100% { transform: scaleX(1) skewX(0deg); opacity: 1; }
+}
+@keyframes chiselexit {
+  0%   { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(0) skewX(2deg); opacity: 0; }
+}
+
 .btn-ancient {
   background: transparent;
   border: 1px solid var(--accent);
@@ -193,9 +202,10 @@ body::before {
   font-size: 12px;
   letter-spacing: 3px;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: color 0.2s ease, border-color 0.2s ease;
   position: relative;
   overflow: hidden;
+  isolation: isolate;
 }
 .btn-ancient::before {
   content: '';
@@ -203,13 +213,18 @@ body::before {
   inset: 0;
   background: var(--accent);
   transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.25s ease;
-  z-index: 0;
+  transform-origin: left center;
+  z-index: -1;
+  border-radius: inherit;
 }
-.btn-ancient:hover::before { transform: scaleX(1); }
-.btn-ancient:hover { color: var(--surface); }
-.btn-ancient > * { position: relative; z-index: 1; }
+.btn-ancient:hover::before {
+  animation: chiseledge 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.btn-ancient:hover { color: var(--surface); border-color: var(--accent); }
+.btn-ancient:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
 
 .btn-close {
   background: transparent;
@@ -301,6 +316,12 @@ body::before {
 }
 .streak-pill.hot { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
 
+@keyframes runeglow {
+  0%   { box-shadow: 0 0 0 0 transparent; }
+  40%  { box-shadow: inset 0 0 8px rgba(181,114,42,0.25), 0 0 6px rgba(181,114,42,0.3); }
+  100% { box-shadow: inset 0 0 4px rgba(181,114,42,0.12), 0 0 4px rgba(181,114,42,0.15); }
+}
+
 .hdr-btn {
   background: transparent;
   border: 1px solid var(--border);
@@ -310,11 +331,17 @@ body::before {
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 1px;
-  transition: all 0.2s;
+  transition: color 0.2s, border-color 0.2s;
   border-radius: var(--radius);
   white-space: nowrap;
+  position: relative;
 }
-.hdr-btn:hover { border-color: var(--accent); color: var(--accent); }
+.hdr-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  animation: runeglow 0.4s ease forwards;
+}
+.hdr-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 #main-layout { display: flex; flex: 1; overflow: hidden; }
 
@@ -777,6 +804,109 @@ body::before {
 .seq-dot.active { background: var(--gold);  border-color: var(--gold); animation: nodePulse 1.2s ease-in-out infinite; }
 .seq-prompt { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; color: var(--accent); margin-bottom: 12px; }
 
+@keyframes lessonReveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes lessonDismiss {
+  to   { opacity: 0; transform: translateY(-8px) scale(0.98); }
+}
+
+.lesson-panel {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-top: 3px solid var(--gold);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  animation: lessonReveal 0.35s ease forwards;
+}
+.lesson-panel.lesson-dismissing {
+  animation: lessonDismiss 0.35s ease forwards;
+  pointer-events: none;
+}
+
+.lesson-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: var(--gold-dim);
+  border-bottom: 1px solid var(--border2);
+  flex-wrap: wrap;
+}
+.lesson-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.lesson-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: 1px;
+}
+
+.lesson-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.lesson-text {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.85;
+}
+.lesson-code {
+  background: #1a1208;
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--green);
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.75;
+}
+.lesson-tip, .lesson-warning {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.lesson-tip     { background: var(--teal-dim); border: 1px solid var(--teal); color: var(--teal); }
+.lesson-warning { background: var(--red-dim);  border: 1px solid var(--red);  color: var(--red);  }
+.lesson-tip-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  font-weight: 700;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.lesson-footer {
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  background: var(--surface2);
+}
+.lesson-ready-btn {
+  font-size: 11px;
+  letter-spacing: 2px;
+  padding: 9px 22px;
+}
+
 #controls-bar {
   display: flex;
   gap: 10px;
@@ -798,13 +928,29 @@ body::before {
   font-size: 10px;
   letter-spacing: 1px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s, border-color 0.2s;
   display: flex;
   align-items: center;
   gap: 6px;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.ctrl-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .ctrl-btn:hover           { border-color: var(--gold); color: var(--gold); }
+.ctrl-btn:hover::after    { transform: scaleX(1); }
 .ctrl-btn.ctrl-skip:hover { border-color: var(--red); color: var(--red); }
+.ctrl-btn.ctrl-skip::after { background: var(--red); }
+.ctrl-btn:focus-visible   { outline: 2px solid var(--gold); outline-offset: 2px; }
 .ctrl-cost { font-size: 9px; color: var(--red); border: 1px solid var(--red-dim); border-radius: 20px; padding: 0 5px; }
 .xp-preview { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); display: flex; align-items: center; gap: 4px; }
 .xp-icon { color: var(--gold); }
@@ -876,8 +1022,7 @@ body::before {
   line-height: 1.8;
   margin-bottom: 16px;
   overflow-x: auto;
-}
-.feedback-reward { font-family: var(--font-display); font-size: 22px; color: var(--gold); margin-bottom: 20px; letter-spacing: 3px; }
+}.feedback-reward { font-family: var(--font-display); font-size: 22px; color: var(--gold); margin-bottom: 20px; letter-spacing: 3px; }
 
 #map-chapters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .map-item { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 11px; display: flex; align-items: center; gap: 8px; }
