@@ -46,14 +46,20 @@ const SFX = {
 const DEFAULT_STATE = {
   shards: 0, currentStep: 0, streak: 0, maxStreak: 0,
   soundOn: true, prologueDone: false, tourDone: false,
-  completed: [], fieldNotes: []
+  completed: [], fieldNotes: [], shardHistory: [],
+  typewriterSpeed: 18, typewriterEnabled: true, animationsEnabled: true
 };
 
 let STATE = { ...DEFAULT_STATE };
 
-/* ----------------------------------------------------------------
-   ERA SYSTEM — driven by GAME_CONFIG.eras
----------------------------------------------------------------- */
+function applyAnimationState() {
+  if (!STATE.animationsEnabled) {
+    document.body.classList.add('no-animations');
+  } else {
+    document.body.classList.remove('no-animations');
+  }
+}
+
 function applyEra(eraKey) {
   const cfg = GAME_CONFIG.eras;
   Object.keys(cfg).forEach(k => {
@@ -63,6 +69,7 @@ function applyEra(eraKey) {
   const era = cfg[eraKey];
   if (!era) return;
   if (era.cssClass) document.body.classList.add(era.cssClass);
+  applyAnimationState();
 
   const root = document.documentElement;
   Object.entries(era.vars).forEach(([k, v]) => root.style.setProperty(k, v));
@@ -78,17 +85,22 @@ function applyEra(eraKey) {
   }
 }
 
-/* ----------------------------------------------------------------
-   PROLOGUE
----------------------------------------------------------------- */
 const PROLOGUE = {
   index: 0,
+  _onFinish: null,
 
-  init() {
+  init(onFinishCallback) {
+    this._onFinish = onFinishCallback || null;
+
     this.el     = document.getElementById('prologue-text');
     this.pageEl = document.getElementById('prologue-page');
     this.btn    = document.getElementById('prologue-next-btn');
-    this.btn.onclick = () => this.next();
+
+    if (this.btn) {
+      this.btn.onclick = null;
+      this.btn.onclick = () => this.next();
+    }
+
     this.render();
   },
 
@@ -118,38 +130,43 @@ const PROLOGUE = {
     STATE.prologueDone = true;
     STATE.tourDone     = false;
     GAME.saveState();
+
     const prologue = document.getElementById('prologue-screen');
     const game     = document.getElementById('game-screen');
+
     prologue.style.transition = 'opacity 0.8s ease';
     prologue.style.opacity    = '0';
+
     setTimeout(() => {
       prologue.classList.remove('active');
-      game.classList.add('active');
-      GAME.renderChapter();
-      GAME.rebuildGraph();
-      GAME.updateHeader();
-      setTimeout(() => TOUR.start(), 600);
+      prologue.style.opacity    = '';
+      prologue.style.transition = '';
+
+      if (typeof this._onFinish === 'function') {
+        this._onFinish();
+      } else {
+        game.classList.add('active');
+        GAME.renderChapter();
+        GAME.rebuildGraph();
+        GAME.updateHeader();
+        setTimeout(() => TOUR.start(), 600);
+      }
     }, 800);
   }
 };
 
-/* ----------------------------------------------------------------
-   TOUR — fixed highlight system using a positioned ring element
----------------------------------------------------------------- */
 const TOUR = {
   step: 0,
   _ov:   null,
   _ring: null,
-  _ro:   null, // ResizeObserver watching the current target
+  _ro:   null,
   steps: [
     { target: '#story-panel',   title: 'The Story',         body: 'Each chapter begins with a narrative that sets the scene. Read it to understand the context before attempting the task.',                                  position: 'bottom' },
-    { target: '#task-box',      title: 'Your Mission',      body: 'The mission box tells you exactly what to do. Some chapters ask you to type a command, others ask you to choose, sort, or match.',                       position: 'bottom' },
     { target: '#question-zone', title: 'The Question Zone', body: 'This is where you answer. For terminal questions, type the command and press Enter. For others, click or drag your answer.',                             position: 'top'    },
-    { target: '#hint-btn',      title: 'Oracle Hint',       body: 'Stuck? Spend 5 Shards to reveal a hint. Shards are earned by answering correctly, so use them sparingly.',                                              position: 'top'    },
-    { target: '#shard-display', title: 'Shards',            body: 'Shards are your score. You earn them for every correct answer. Build a streak and the rewards feel even better.',                                       position: 'bottom' },
-    { target: '#map-btn',       title: 'Expedition Map',    body: 'The map shows every chapter in the archive. Completed chapters are marked. Use it to track your progress at any time.',                                 position: 'bottom' },
-    { target: '#settings-btn',  title: 'Settings',          body: 'Access settings to toggle sound, restart the expedition, replay the prologue, or view this guide again at any time.',                                   position: 'bottom' },
-    { target: '#git-graph',     title: 'The Chronicle',     body: 'The left panel draws your commit graph as you progress. Each dot is a chapter you have completed. Branch and merge nodes appear in different colors.',  position: 'right'  },
+    { target: '#shard-display', title: 'Shards',            body: 'Shards are your score. You earn them for every correct answer. Click on the shard display to view your complete history of gains and expenses.',        position: 'bottom' },
+    { target: '#map-btn',       title: 'Expedition Map',    body: 'The map shows every chapter in the archive. Completed chapters are marked. Click any unlocked chapter to jump directly to it.',                          position: 'bottom' },
+    { target: '#settings-btn',  title: 'Settings',          body: 'Access settings to toggle sound, adjust typewriter speed, restart the expedition, replay the prologue, or view this guide again at any time.',          position: 'bottom' },
+    { target: '#git-graph',     title: 'The Chronicle',     body: 'The left panel draws your commit graph as you progress. Each dot is a chapter you have completed. Click any node to jump back to that chapter.',         position: 'right'  },
     { target: '#right-panel',   title: 'Field Notes',       body: 'Every command you master gets logged here as a quick reference. By the end of the expedition you will have a complete Git cheat sheet.',                position: 'left'   },
   ],
 
@@ -175,12 +192,10 @@ const TOUR = {
       if (e.key === 'ArrowRight' || e.key === 'Enter') this.advance();
     });
 
-    // Dimming backdrop — four rectangles leave a gap-free hole via clip-path on box
     const backdrop = document.createElement('div');
     backdrop.id = 'tour-backdrop';
     ov.appendChild(backdrop);
 
-    // Crisp highlight ring that sits exactly on the target
     const ring = document.createElement('div');
     ring.id = 'tour-ring';
     ring.setAttribute('aria-hidden', 'true');
@@ -223,7 +238,6 @@ const TOUR = {
       `<span class="tour-dot${i === this.step ? ' active' : ''}" aria-hidden="true"></span>`
     ).join('');
 
-    // Disconnect any previous observer
     if (this._ro) { this._ro.disconnect(); this._ro = null; }
 
     const target = document.querySelector(s.target);
@@ -247,7 +261,6 @@ const TOUR = {
 
     updateRing();
 
-    // Watch target for size changes (typewriter growing the story panel, etc.)
     if (window.ResizeObserver) {
       this._ro = new ResizeObserver(updateRing);
       this._ro.observe(target);
@@ -295,17 +308,14 @@ const TOUR = {
 let MATCH = { selected: null, col: null, matches: 0 };
 let SORT  = { dragging: null, dragEl: null };
 
-/* ----------------------------------------------------------------
-   GAME ENGINE
----------------------------------------------------------------- */
 const GAME = {
   _twId: 0,
+  _hintShown: false,
 
   init() {
     SFX.init();
     this.loadState();
 
-    // Inject fonts
     if (GAME_CONFIG.fonts) {
       const link = document.createElement('link');
       link.rel  = 'stylesheet';
@@ -313,7 +323,6 @@ const GAME = {
       document.head.appendChild(link);
     }
 
-    // Inject branding from config
     document.title = GAME_CONFIG.name;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.content = GAME_CONFIG.description;
@@ -321,8 +330,11 @@ const GAME = {
     if (logoText) logoText.textContent = GAME_CONFIG.name;
 
     if (!STATE.prologueDone) {
-      document.getElementById('prologue-screen').classList.add('active');
-      PROLOGUE.init();
+      // First-time visitor: show prologue
+      const prologueScreen = document.getElementById('prologue-screen');
+      prologueScreen.classList.add('active');
+      PROLOGUE.index = 0;
+      PROLOGUE.init(/* default finish callback built into PROLOGUE.finish() */);
     } else {
       document.getElementById('game-screen').classList.add('active');
       this.renderChapter();
@@ -337,6 +349,8 @@ const GAME = {
     const soundBtn = document.getElementById('sound-btn');
     soundBtn.textContent = STATE.soundOn ? 'SFX ON' : 'SFX OFF';
 
+    applyAnimationState();
+
     document.getElementById('sound-btn').addEventListener('click',          () => this.toggleSound());
     document.getElementById('hint-btn').addEventListener('click',           () => this.showHint());
     document.getElementById('skip-btn').addEventListener('click',           () => this.skipChapter());
@@ -345,7 +359,14 @@ const GAME = {
     document.getElementById('fb-continue').addEventListener('click',        () => this.closeFeedback());
     document.getElementById('settings-btn').addEventListener('click',       () => this.openSettings());
     document.getElementById('settings-close').addEventListener('click',     () => this.closeSettings());
+    document.getElementById('shard-display').addEventListener('click',      () => this.openShardHistory());
+    document.getElementById('shard-history-close').addEventListener('click', () => this.closeShardHistory());
     document.getElementById('settings-sound-toggle').addEventListener('click', () => { this.toggleSound(); this._updateSettingsSound(); });
+    document.getElementById('settings-typewriter-toggle').addEventListener('click', () => this.toggleTypewriter());
+    document.getElementById('settings-animations-toggle').addEventListener('click', () => this.toggleAnimations());
+    document.getElementById('settings-speed-slow').addEventListener('click', () => this.setTypewriterSpeed(28));
+    document.getElementById('settings-speed-normal').addEventListener('click', () => this.setTypewriterSpeed(18));
+    document.getElementById('settings-speed-fast').addEventListener('click', () => this.setTypewriterSpeed(8));
     document.getElementById('settings-tour-btn').addEventListener('click',     () => { this.closeSettings(); setTimeout(() => TOUR.start(), 200); });
     document.getElementById('settings-prologue-btn').addEventListener('click', () => { this.closeSettings(); this._replayPrologue(); });
     document.getElementById('settings-reset-btn').addEventListener('click',    () => { document.getElementById('settings-reset-confirm').style.display = 'block'; });
@@ -356,19 +377,43 @@ const GAME = {
       this.reset();
     });
 
+    // Mobile nav
+    const burgerBtn = document.getElementById('mobile-menu-btn');
+    const mobileNavClose = document.getElementById('mobile-nav-close');
+    if (burgerBtn) burgerBtn.addEventListener('click', () => this.openMobileNav());
+    if (mobileNavClose) mobileNavClose.addEventListener('click', () => this.closeMobileNav());
+
     document.getElementById('map-overlay').addEventListener('click',      e => { if (e.target === e.currentTarget) this.closeMap(); });
     document.getElementById('settings-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) this.closeSettings(); });
     document.getElementById('feedback-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) this.closeFeedback(); });
+    document.getElementById('shard-history-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) this.closeShardHistory(); });
 
     document.addEventListener('keydown', e => {
       if (e.key !== 'Escape') return;
-      if      (document.getElementById('map-overlay').classList.contains('open'))      this.closeMap();
-      else if (document.getElementById('settings-overlay').classList.contains('open')) this.closeSettings();
-      else if (document.getElementById('feedback-overlay').classList.contains('open')) this.closeFeedback();
-      else if (document.getElementById('tour-overlay')?.style.display === 'block')     TOUR.finish();
+      if      (document.getElementById('map-overlay').classList.contains('open'))           this.closeMap();
+      else if (document.getElementById('settings-overlay').classList.contains('open'))      this.closeSettings();
+      else if (document.getElementById('feedback-overlay').classList.contains('open'))      this.closeFeedback();
+      else if (document.getElementById('shard-history-overlay').classList.contains('open')) this.closeShardHistory();
+      else if (document.getElementById('tour-overlay')?.style.display === 'block')          TOUR.finish();
     });
 
     document.body.addEventListener('click', () => SFX.resume(), { once: true });
+  },
+
+  openMobileNav() {
+    SFX.play('click');
+    const drawer   = document.getElementById('mobile-nav-drawer');
+    const backdrop = document.getElementById('mobile-nav-backdrop');
+    if (drawer)   { drawer.classList.add('open');   drawer.setAttribute('aria-hidden', 'false'); }
+    if (backdrop) { backdrop.classList.add('open'); }
+  },
+
+  closeMobileNav() {
+    SFX.play('click');
+    const drawer   = document.getElementById('mobile-nav-drawer');
+    const backdrop = document.getElementById('mobile-nav-backdrop');
+    if (drawer)   { drawer.classList.remove('open');   drawer.setAttribute('aria-hidden', 'true'); }
+    if (backdrop) { backdrop.classList.remove('open'); }
   },
 
   saveState() {
@@ -385,8 +430,12 @@ const GAME = {
         if (typeof STATE.currentStep !== 'number' || STATE.currentStep < 0 || STATE.currentStep > maxStep) {
           STATE.currentStep = 0;
         }
-        if (!Array.isArray(STATE.completed))  STATE.completed  = [];
-        if (!Array.isArray(STATE.fieldNotes)) STATE.fieldNotes = [];
+        if (!Array.isArray(STATE.completed))     STATE.completed     = [];
+        if (!Array.isArray(STATE.fieldNotes))    STATE.fieldNotes    = [];
+        if (!Array.isArray(STATE.shardHistory))  STATE.shardHistory  = [];
+        if (typeof STATE.typewriterSpeed !== 'number') STATE.typewriterSpeed = 18;
+        if (typeof STATE.typewriterEnabled !== 'boolean') STATE.typewriterEnabled = true;
+        if (typeof STATE.animationsEnabled !== 'boolean') STATE.animationsEnabled = true;
       }
     } catch(e) {
       STATE = { ...DEFAULT_STATE };
@@ -401,22 +450,42 @@ const GAME = {
     TOUR._box = null;
     STATE = { ...DEFAULT_STATE };
     this.saveState();
+
     const ws = document.getElementById('win-screen');
     ws.classList.remove('active');
     ws.style.display = '';
-    PROLOGUE.index = 0;
+
+    // Hide game screen
+    document.getElementById('game-screen').classList.remove('active');
+
+    // Show prologue fresh
     const prologue = document.getElementById('prologue-screen');
     prologue.style.opacity    = '1';
     prologue.style.transition = '';
     prologue.classList.add('active');
-    document.getElementById('game-screen').classList.remove('active');
-    PROLOGUE.init();
+
+    PROLOGUE.index = 0;
+    PROLOGUE.init(/* use default finish callback */);
   },
 
-  renderChapter() {
+  _setLessonMode(isLesson) {
+    const hintBtn   = document.getElementById('hint-btn');
+    const xpPreview = document.getElementById('xp-preview');
+    if (hintBtn)   hintBtn.style.display   = isLesson ? 'none' : '';
+    if (xpPreview) xpPreview.style.display = isLesson ? 'none' : '';
+  },
+
+  renderChapter(chapterIndex) {
     const chapters = GAME_CONFIG.chapters;
+    if (chapterIndex !== undefined) {
+      STATE.currentStep = chapterIndex;
+      this.saveState();
+    }
     const ch = chapters[STATE.currentStep];
     if (!ch) { this.showWin(); return; }
+
+    this._hintShown = false;
+    this._updateHintBtn();
 
     const prevArc = STATE.currentStep > 0 ? chapters[STATE.currentStep - 1].arc : null;
     if (prevArc !== null && prevArc !== ch.arc) SFX.play('eraShift');
@@ -431,7 +500,7 @@ const GAME = {
 
     const storyEl = document.getElementById('story-narrative');
     storyEl.textContent = '';
-    this.typeWriter(storyEl, ch.story.replace(/\s+/g,' ').trim(), 18);
+    this.typeWriter(storyEl, ch.story.replace(/\s+/g,' ').trim(), STATE.typewriterSpeed);
 
     document.getElementById('task-text').textContent = ch.task;
     document.getElementById('xp-val').textContent    = ch.xp;
@@ -446,18 +515,42 @@ const GAME = {
     qBadge.textContent = typeLabels[ch.qType] || ch.qType.toUpperCase();
     qBadge.className   = `qtype-badge qtype-${ch.qType.replace(/-/g,'')}`;
 
+    if (ch.chapterType === 'exam') {
+      qBadge.textContent = 'EXAM';
+      qBadge.className = 'qtype-badge qtype-exam';
+    }
+
     const zone = document.getElementById('question-zone');
     zone.innerHTML = '';
 
-    // If chapter has a lesson, show it first as a dismissible inscription panel
+    const taskBox = document.getElementById('task-box');
     if (ch.lesson) {
+      taskBox.style.display = 'none';
+      this._setLessonMode(true);
       this.renderLesson(ch, zone);
     } else {
+      taskBox.style.display = '';
+      this._setLessonMode(false);
       this._renderQuestion(ch, zone);
     }
 
     this.updateHeader();
     this.updateFieldNotes();
+    this.rebuildGraph();
+  },
+
+  _updateHintBtn() {
+    const btn = document.getElementById('hint-btn');
+    if (!btn) return;
+    if (this._hintShown) {
+      btn.disabled = true;
+      btn.classList.add('hint-used');
+      btn.title = 'Hint already revealed';
+    } else {
+      btn.disabled = false;
+      btn.classList.remove('hint-used');
+      btn.title = 'Use oracle hint for 5 shards';
+    }
   },
 
   renderLesson(ch, zone) {
@@ -493,7 +586,7 @@ const GAME = {
       } else if (sec.type === 'warning') {
         const warn = document.createElement('div');
         warn.className = 'lesson-warning';
-        warn.innerHTML = `<span class="lesson-tip-label">&#9888; CAUTION</span><span>${escapeHtml(sec.content)}</span>`;
+        warn.innerHTML = `<span class="lesson-tip-label">CAUTION</span><span>${escapeHtml(sec.content)}</span>`;
         body.appendChild(warn);
       }
     });
@@ -504,25 +597,49 @@ const GAME = {
     footer.className = 'lesson-footer';
     const readyBtn = document.createElement('button');
     readyBtn.className   = 'btn-ancient lesson-ready-btn';
-    readyBtn.textContent = 'I UNDERSTAND — TEST ME';
+    readyBtn.textContent = 'I UNDERSTAND - TEST ME';
     readyBtn.setAttribute('aria-label', 'Dismiss lesson and attempt the question');
     readyBtn.addEventListener('click', () => {
       SFX.play('pageFlip');
       panel.classList.add('lesson-dismissing');
-      setTimeout(() => {
+      let transitioned = false;
+      const doTransition = () => {
+        if (transitioned) return;
+        transitioned = true;
         zone.innerHTML = '';
+        document.getElementById('task-box').style.display = '';
+        this._setLessonMode(false);
+        this._hintShown = false;
+        this._updateHintBtn();
         this._renderQuestion(ch, zone);
-      }, 350);
+      };
+      panel.addEventListener('animationend', doTransition, { once: true });
+      setTimeout(doTransition, 400);
     });
     footer.appendChild(readyBtn);
     panel.appendChild(footer);
     zone.appendChild(panel);
 
-    // Auto-focus the button so keyboard users can proceed immediately
     requestAnimationFrame(() => readyBtn.focus());
   },
 
   _renderQuestion(ch, zone) {
+    const isExam = ch.chapterType === 'exam';
+    if (!isExam && ch.lesson) {
+      const reviewBtn = document.createElement('button');
+      reviewBtn.className = 'review-lesson-btn';
+      reviewBtn.innerHTML = '<span aria-hidden="true">&#9670;</span> REVIEW LESSON';
+      reviewBtn.setAttribute('aria-label', 'Review the lesson material');
+      reviewBtn.addEventListener('click', () => {
+        SFX.play('pageFlip');
+        zone.innerHTML = '';
+        document.getElementById('task-box').style.display = 'none';
+        this._setLessonMode(true);
+        this.renderLesson(ch, zone);
+      });
+      zone.appendChild(reviewBtn);
+    }
+
     const renderers = {
       terminal:        () => this.renderTerminal(ch, zone),
       binary:          () => this.renderBinary(ch, zone),
@@ -540,6 +657,10 @@ const GAME = {
   },
 
   typeWriter(el, text, speed = 18) {
+    if (!STATE.typewriterEnabled) {
+      el.textContent = text;
+      return;
+    }
     this._twId++;
     const myId = this._twId;
     let i = 0;
@@ -553,32 +674,62 @@ const GAME = {
 
   updateHeader() {
     const chapters = GAME_CONFIG.chapters;
+    const total    = chapters.length;
+    const pct      = Math.round((STATE.currentStep / total) * 100);
+
     document.getElementById('shard-count').textContent  = STATE.shards;
     document.getElementById('streak-count').textContent = STATE.streak;
     document.getElementById('streak-pill').className    = 'streak-pill' + (STATE.streak >= 3 ? ' hot' : '');
-    const total = chapters.length;
-    document.getElementById('progress-fill').style.width  = Math.round((STATE.currentStep / total) * 100) + '%';
+    document.getElementById('progress-fill').style.width  = pct + '%';
     document.getElementById('progress-label').textContent = STATE.currentStep + ' / ' + total;
+
+    const mobileShard  = document.getElementById('mobile-shard-count');
+    const mobileStreak = document.getElementById('mobile-streak-count');
+    const mobileProgFill  = document.getElementById('mobile-progress-fill');
+    const mobileProgLabel = document.getElementById('mobile-progress-label');
+    if (mobileShard)     mobileShard.textContent      = STATE.shards;
+    if (mobileStreak)    mobileStreak.textContent     = STATE.streak;
+    if (mobileProgFill)  mobileProgFill.style.width   = pct + '%';
+    if (mobileProgLabel) mobileProgLabel.textContent  = STATE.currentStep + ' / ' + total;
   },
 
   rebuildGraph() {
     const graph = document.getElementById('git-graph');
     graph.innerHTML = '';
-    for (let i = 0; i < STATE.currentStep; i++) {
+
+    const maxCompletedIdx = GAME_CONFIG.chapters.reduce((max, ch, i) => {
+      return STATE.completed.includes(ch.id) ? i : max;
+    }, -1);
+    const limit = Math.max(maxCompletedIdx + 2, STATE.currentStep + 1);
+
+    for (let i = 0; i < limit && i < GAME_CONFIG.chapters.length; i++) {
       const ch = GAME_CONFIG.chapters[i];
       if (!ch) break;
+
+      const isActive = (i === STATE.currentStep);
+
       const row   = document.createElement('div');
       row.className = 'gn-row';
       row.setAttribute('role', 'listitem');
-      row.setAttribute('aria-label', ch.title);
+      row.setAttribute('aria-label', ch.title + (isActive ? ' (current)' : ''));
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', () => {
+        SFX.play('click');
+        this.renderChapter(i);
+      });
+
       const track = document.createElement('div');
       track.className = 'gn-track';
+
       const dot = document.createElement('div');
       dot.className = 'gn-dot' + (ch.nodeType === 'branch' ? ' branch' : ch.nodeType === 'merge' ? ' merge' : '');
-      if (i === STATE.currentStep - 1) dot.classList.add('current');
+      if (isActive) dot.classList.add('current');
+
       const label = document.createElement('span');
       label.className   = 'gn-label';
       label.textContent = ch.title;
+      if (isActive) label.style.color = 'var(--accent)';
+
       if (i > 0) { const line = document.createElement('div'); line.className = 'gn-line'; track.appendChild(line); }
       track.appendChild(dot);
       row.appendChild(track);
@@ -605,6 +756,13 @@ const GAME = {
     STATE.maxStreak = Math.max(STATE.maxStreak, STATE.streak);
     if (!STATE.completed.includes(ch.id)) STATE.completed.push(ch.id);
     if (ch.fieldNote && !STATE.fieldNotes.some(n => n.cmd === ch.fieldNote.cmd)) STATE.fieldNotes.push(ch.fieldNote);
+
+    STATE.shardHistory.push({
+      action: ch.title,
+      amount: ch.xp,
+      timestamp: Date.now()
+    });
+
     if (STATE.streak >= 3) SFX.play('streak'); else SFX.play('success');
     const sd = document.getElementById('shard-display');
     sd.classList.add('gained');
@@ -619,7 +777,7 @@ const GAME = {
     const ov = document.getElementById('feedback-overlay');
     document.getElementById('fb-status').textContent      = STATE.streak >= 3 ? `[STREAK x${STATE.streak}]` : '[SUCCESS]';
     document.getElementById('fb-status').className        = 'feedback-status ok';
-    document.getElementById('fb-title').textContent       = STATE.streak >= 3 ? `HOT STREAK: ${STATE.streak} IN A ROW` : ch.title.toUpperCase() + ' — RECOVERED';
+    document.getElementById('fb-title').textContent       = STATE.streak >= 3 ? `HOT STREAK: ${STATE.streak} IN A ROW` : ch.title.toUpperCase() + ' - RECOVERED';
     document.getElementById('fb-explanation').textContent = ch.explanation;
     document.getElementById('fb-example').textContent     = ch.example || '';
     document.getElementById('fb-reward').textContent      = `+${ch.xp} SHARDS`;
@@ -639,12 +797,23 @@ const GAME = {
   },
 
   showHint() {
+    if (this._hintShown) return;
+
     SFX.play('hint');
     const ch = GAME_CONFIG.chapters[STATE.currentStep];
     if (STATE.shards < 5) { this.toast('NOT ENOUGH SHARDS (need 5)', 'warn'); return; }
     STATE.shards -= 5;
+    STATE.shardHistory.push({
+      action: 'Oracle Hint',
+      amount: -5,
+      timestamp: Date.now()
+    });
     this.updateHeader();
     this.saveState();
+
+    this._hintShown = true;
+    this._updateHintBtn();
+
     const zone = document.getElementById('question-zone');
     const ex   = zone.querySelector('.hint-inline');
     if (ex) ex.remove();
@@ -670,13 +839,30 @@ const GAME = {
 
   openMap() {
     SFX.play('click');
-    document.getElementById('map-chapters').innerHTML = GAME_CONFIG.chapters.map((ch, i) => {
+    const mapEl = document.getElementById('map-chapters');
+ 
+    const maxCompletedIdx = GAME_CONFIG.chapters.reduce((max, ch, i) => {
+      return STATE.completed.includes(ch.id) ? i : max;
+    }, -1);
+    const playableLimit = Math.max(maxCompletedIdx + 1, STATE.currentStep);
+ 
+    mapEl.innerHTML = GAME_CONFIG.chapters.map((ch, i) => {
       const done   = STATE.completed.includes(ch.id);
       const active = i === STATE.currentStep;
-      const locked = i > STATE.currentStep;
+      const locked = i > playableLimit;
       const cls    = 'map-item' + (done ? ' done' : active ? ' active' : locked ? ' locked' : '');
-      return `<div class="${cls}"><div class="map-dot"></div><span>${String(i+1).padStart(2,'0')}. ${escapeHtml(ch.title)}</span></div>`;
+      return `<div class="${cls}" data-chapter="${i}" style="${!locked ? 'cursor:pointer' : ''}"><div class="map-dot"></div><span>${String(i+1).padStart(2,'0')}. ${escapeHtml(ch.title)}</span></div>`;
     }).join('');
+ 
+    mapEl.querySelectorAll('.map-item:not(.locked)').forEach((item) => {
+      const idx = parseInt(item.dataset.chapter, 10);
+      item.addEventListener('click', () => {
+        SFX.play('click');
+        this.closeMap();
+        this.renderChapter(idx);
+      });
+    });
+ 
     document.getElementById('map-overlay').classList.add('open');
     document.getElementById('map-overlay').setAttribute('aria-hidden', 'false');
   },
@@ -690,6 +876,8 @@ const GAME = {
   openSettings() {
     SFX.play('click');
     this._updateSettingsSound();
+    this._updateTypewriterSettings();
+    this._updateAnimationsSettings();
     document.getElementById('settings-reset-confirm').style.display = 'none';
     document.getElementById('settings-overlay').classList.add('open');
     document.getElementById('settings-overlay').setAttribute('aria-hidden', 'false');
@@ -701,27 +889,74 @@ const GAME = {
     document.getElementById('settings-overlay').setAttribute('aria-hidden', 'true');
   },
 
+  openShardHistory() {
+    SFX.play('click');
+    const historyEl = document.getElementById('shard-history-list');
+    if (STATE.shardHistory.length === 0) {
+      historyEl.innerHTML = '<div class="shard-history-empty">No transactions yet. Complete chapters to earn shards!</div>';
+    } else {
+      historyEl.innerHTML = STATE.shardHistory.slice().reverse().map(entry => {
+        const isGain = entry.amount > 0;
+        return `
+          <div class="shard-history-item ${isGain ? 'gain' : 'expense'}">
+            <div class="shard-history-action">${escapeHtml(entry.action)}</div>
+            <div class="shard-history-amount ${isGain ? 'positive' : 'negative'}">${isGain ? '+' : ''}${entry.amount}</div>
+          </div>
+        `;
+      }).join('');
+    }
+    document.getElementById('shard-history-total').textContent = STATE.shards;
+    document.getElementById('shard-history-overlay').classList.add('open');
+    document.getElementById('shard-history-overlay').setAttribute('aria-hidden', 'false');
+  },
+
+  closeShardHistory() {
+    SFX.play('click');
+    document.getElementById('shard-history-overlay').classList.remove('open');
+    document.getElementById('shard-history-overlay').setAttribute('aria-hidden', 'true');
+  },
+
   _updateSettingsSound() {
     const btn = document.getElementById('settings-sound-toggle');
     btn.textContent = STATE.soundOn ? 'SOUND: ON' : 'SOUND: OFF';
     btn.setAttribute('aria-pressed', STATE.soundOn ? 'true' : 'false');
   },
 
+  _updateTypewriterSettings() {
+    const btn = document.getElementById('settings-typewriter-toggle');
+    btn.textContent = STATE.typewriterEnabled ? 'TYPEWRITER: ON' : 'TYPEWRITER: OFF';
+    btn.setAttribute('aria-pressed', STATE.typewriterEnabled ? 'true' : 'false');
+
+    document.querySelectorAll('.settings-speed-btn').forEach(b => b.classList.remove('active'));
+    if (STATE.typewriterSpeed === 8) document.getElementById('settings-speed-fast').classList.add('active');
+    else if (STATE.typewriterSpeed === 28) document.getElementById('settings-speed-slow').classList.add('active');
+    else document.getElementById('settings-speed-normal').classList.add('active');
+  },
+
+  _updateAnimationsSettings() {
+    const btn = document.getElementById('settings-animations-toggle');
+    btn.textContent = STATE.animationsEnabled ? 'ANIMATIONS: ON' : 'ANIMATIONS: OFF';
+    btn.setAttribute('aria-pressed', STATE.animationsEnabled ? 'true' : 'false');
+  },
+
   _replayPrologue() {
     this._twId++;
     PROLOGUE.index = 0;
+
     const prologue = document.getElementById('prologue-screen');
     const game     = document.getElementById('game-screen');
+
     prologue.style.opacity    = '1';
     prologue.style.transition = '';
     prologue.classList.add('active');
     game.classList.remove('active');
-    PROLOGUE.init();
-    PROLOGUE.finish = function() {
-      prologue.style.transition = 'opacity 0.8s ease';
-      prologue.style.opacity    = '0';
-      setTimeout(() => { prologue.classList.remove('active'); game.classList.add('active'); }, 800);
-    };
+
+    PROLOGUE.init(() => {
+      game.classList.add('active');
+      GAME.renderChapter();
+      GAME.rebuildGraph();
+      GAME.updateHeader();
+    });
   },
 
   toggleSound() {
@@ -732,6 +967,28 @@ const GAME = {
     btn.setAttribute('aria-pressed', String(STATE.soundOn));
     this.saveState();
     if (STATE.soundOn) SFX.play('click');
+  },
+
+  toggleTypewriter() {
+    STATE.typewriterEnabled = !STATE.typewriterEnabled;
+    this._updateTypewriterSettings();
+    this.saveState();
+    SFX.play('click');
+  },
+
+  toggleAnimations() {
+    STATE.animationsEnabled = !STATE.animationsEnabled;
+    this._updateAnimationsSettings();
+    applyAnimationState();
+    this.saveState();
+    SFX.play('click');
+  },
+
+  setTypewriterSpeed(speed) {
+    STATE.typewriterSpeed = speed;
+    this._updateTypewriterSettings();
+    this.saveState();
+    SFX.play('click');
   },
 
   showWin() {
@@ -755,11 +1012,9 @@ const GAME = {
     setTimeout(() => t.remove(), 2400);
   },
 
-  /* ---------- Question renderers ---------- */
-
   renderTerminal(ch, zone) {
     const prompt = GAME_CONFIG.terminalPrompt;
-    zone.innerHTML = `
+    zone.innerHTML += `
       <div class="terminal-wrap" role="region" aria-label="Terminal input">
         <div class="terminal-bar">
           <div class="tdot tdot-r" aria-hidden="true"></div>
@@ -780,8 +1035,6 @@ const GAME = {
     const inp = document.getElementById('user-input');
     inp.focus();
 
-    // Command history — arrow up/down scrolls through previous attempts
-    // No autocomplete: history only recalls what the user actually typed
     const history = [];
     let histIdx   = -1;
     let draft     = '';
@@ -927,7 +1180,7 @@ const GAME = {
     SORT = { dragging: null, dragEl: null };
     const bankLabel = document.createElement('p');
     bankLabel.className   = 'sort-label';
-    bankLabel.textContent = 'AVAILABLE COMMANDS — drag into the correct order below:';
+    bankLabel.textContent = 'AVAILABLE COMMANDS - drag into the correct order below:';
     zone.appendChild(bankLabel);
     const bank = document.createElement('div');
     bank.className = 'sort-bank';
@@ -939,7 +1192,7 @@ const GAME = {
     const targetLabel = document.createElement('p');
     targetLabel.className       = 'sort-label';
     targetLabel.style.marginTop = '12px';
-    targetLabel.textContent     = 'DROP HERE — in the correct sequence:';
+    targetLabel.textContent     = 'DROP HERE - in the correct sequence:';
     zone.appendChild(targetLabel);
     const target = document.createElement('div');
     target.className = 'sort-target';
