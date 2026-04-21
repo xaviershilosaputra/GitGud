@@ -11,7 +11,7 @@
 </head>
 <body>
 
-  <div id="prologue-screen" class="screen active">
+  <div id="prologue-screen" class="screen">
     <div class="prologue-bg" aria-hidden="true"></div>
     <div class="prologue-content">
       <div class="prologue-emblem" aria-hidden="true">&#9670;</div>
@@ -43,7 +43,7 @@
         <div class="progress-label" id="progress-label" aria-live="polite">0 / 0</div>
       </div>
       <div class="header-right">
-        <div class="shard-display" id="shard-display" aria-label="Shards earned">
+        <div class="shard-display" id="shard-display" aria-label="Shards earned" role="button" tabindex="0" title="View shard history">
           <span class="shard-gem" aria-hidden="true">&#9670;</span>
           <span id="shard-count">0</span>
           <span class="shard-label">SHARDS</span>
@@ -51,11 +51,43 @@
         <div class="streak-pill" id="streak-pill" aria-live="polite" aria-label="Current streak">
           <span id="streak-count">0</span>&#x25B8; STREAK
         </div>
-        <button class="hdr-btn" id="sound-btn" aria-label="Toggle sound" aria-pressed="true">SFX ON</button>
+        <button class="hdr-btn hdr-btn-fixed-width" id="sound-btn" aria-label="Toggle sound" aria-pressed="true">SFX ON</button>
         <button class="hdr-btn" id="map-btn" aria-label="View expedition map">MAP</button>
         <button class="hdr-btn" id="settings-btn" aria-label="Open settings">&#9881;</button>
+        <button class="hdr-btn mobile-burger" id="mobile-menu-btn" aria-label="Open navigation menu" aria-expanded="false">&#9776;</button>
       </div>
     </header>
+
+    <div id="mobile-nav-drawer" class="mobile-nav-drawer" role="dialog" aria-label="Navigation" aria-hidden="true">
+      <div class="mobile-nav-header">
+        <span class="mobile-nav-title">MENU</span>
+        <button id="mobile-nav-close" class="mobile-nav-close" aria-label="Close menu">&#10005;</button>
+      </div>
+      <div class="mobile-nav-body">
+        <div class="mobile-nav-progress">
+          <div class="mobile-nav-label">PROGRESS</div>
+          <div class="progress-track" style="width:100%">
+            <!-- FIX #2: Added mobile-progress-fill to be updated by updateHeader() -->
+            <div class="progress-fill" id="mobile-progress-fill"></div>
+          </div>
+          <div class="progress-label" id="mobile-progress-label">0 / 0</div>
+        </div>
+        <div class="mobile-nav-actions">
+          <button class="mobile-nav-btn" onclick="GAME.openMap(); GAME.closeMobileNav();">&#9670; EXPEDITION MAP</button>
+          <button class="mobile-nav-btn" onclick="GAME.openShardHistory(); GAME.closeMobileNav();">&#9670; SHARD LEDGER</button>
+          <button class="mobile-nav-btn" onclick="GAME.openSettings(); GAME.closeMobileNav();">&#9881; SETTINGS</button>
+        </div>
+        <div class="mobile-nav-shard">
+          <span class="shard-gem">&#9670;</span>
+          <!-- FIX #2: These IDs are now properly updated in updateHeader() -->
+          <span id="mobile-shard-count">0</span>
+          <span class="shard-label">SHARDS</span>
+          <span style="margin-left:12px;"></span>
+          <span id="mobile-streak-count">0</span>&#x25B8; STREAK
+        </div>
+      </div>
+    </div>
+    <div id="mobile-nav-backdrop" class="mobile-nav-backdrop" onclick="GAME.closeMobileNav()"></div>
 
     <div id="main-layout">
 
@@ -109,8 +141,6 @@
     </div>
   </div>
 
-  <!-- Overlays -->
-
   <div id="map-overlay" class="overlay" role="dialog" aria-label="Expedition map" aria-hidden="true" aria-modal="true">
     <div class="overlay-inner">
       <div class="overlay-title">EXPEDITION MAP</div>
@@ -140,6 +170,17 @@
         <button id="settings-sound-toggle" class="settings-btn" aria-pressed="true">SOUND: ON</button>
       </div>
       <div class="settings-group">
+        <div class="settings-group-title">ADVANCED CONTROLS</div>
+        <button id="settings-typewriter-toggle" class="settings-btn" aria-pressed="true">TYPEWRITER: ON</button>
+        <div class="settings-speed-group">
+          <span class="settings-speed-label">SPEED:</span>
+          <button id="settings-speed-slow" class="settings-speed-btn">SLOW</button>
+          <button id="settings-speed-normal" class="settings-speed-btn active">NORMAL</button>
+          <button id="settings-speed-fast" class="settings-speed-btn">FAST</button>
+        </div>
+        <button id="settings-animations-toggle" class="settings-btn" aria-pressed="true">ANIMATIONS: ON</button>
+      </div>
+      <div class="settings-group">
         <div class="settings-group-title">GUIDES</div>
         <button id="settings-tour-btn" class="settings-btn">SHOW UI GUIDE AGAIN</button>
         <button id="settings-prologue-btn" class="settings-btn">REPLAY PROLOGUE</button>
@@ -157,6 +198,20 @@
       </div>
       <div class="settings-footer">
         <button class="btn-close" id="settings-close">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="shard-history-overlay" class="overlay" role="dialog" aria-label="Shard History" aria-hidden="true" aria-modal="true">
+    <div class="overlay-inner shard-history-inner">
+      <div class="overlay-title">SHARD LEDGER</div>
+      <div class="shard-history-total-display">
+        <span class="shard-history-total-label">CURRENT BALANCE:</span>
+        <span class="shard-history-total-value" id="shard-history-total">0</span>
+      </div>
+      <div id="shard-history-list" class="shard-history-list"></div>
+      <div class="settings-footer">
+        <button class="btn-close" id="shard-history-close">CLOSE</button>
       </div>
     </div>
   </div>
