@@ -412,6 +412,9 @@ body::before {
   right: 0;
 }
 
+/* FIX #2 (CSS part): Mobile backdrop now uses a simple .open class
+   toggled by JS, replacing the broken CSS sibling combinator selectors
+   that didn't work reliably across browsers. */
 .mobile-nav-backdrop {
   position: fixed;
   inset: 0;
@@ -1514,106 +1517,190 @@ body::before {
 
 @media (max-width: 900px) {
   #sidebar, #right-panel { display: none; }
-  .binary-gate, .match-grid, .choice-grid { grid-template-columns: 1fr; }
-  #header { padding: 8px 12px; gap: 8px; }
-  .logo-era { display: none; }
-  .header-right { gap: 6px; }
-  .shard-label { display: none; }
-  #story-panel  { padding: 12px 16px; }
-  #question-zone{ padding: 14px 16px; }
-  #controls-bar { padding: 8px 16px; }
-  .chapter-title { font-size: 16px; }
-  .story-narrative { font-size: 14px; }
-  #tour-box { width: calc(100vw - 32px); left: 16px !important; }
-
-  .mobile-burger { display: flex; }
-  #map-btn { display: none; }
-  #settings-btn { display: none; }
-  #sound-btn { display: none; }
-  .streak-pill { display: none; }
-}
-
-@media (max-width: 600px) {
-  .prologue-content { padding: 24px 20px; }
-  .prologue-title   { font-size: 26px; }
-  .prologue-text    { font-size: 14px; }
 
   #header {
-    padding: 8px 12px;
-    gap: 8px;
+    padding: 0 16px;
+    height: 52px;
+    gap: 0;
+    flex-shrink: 0;
   }
-  #header .header-center { display: none; }
+  .logo { gap: 8px; }
+  .logo-icon { font-size: 14px; }
+  .logo-text { font-size: 15px; letter-spacing: 2px; }
+  .logo-era { display: none; }
+  .header-center { display: none; }
+  .header-right { gap: 8px; margin-left: auto; }
 
-  .logo-text { font-size: 14px; letter-spacing: 2px; }
+  #map-btn, #settings-btn, #sound-btn { display: none; }
+  .streak-pill { display: none; }
+  .mobile-burger { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; font-size: 16px; }
 
   .shard-display {
-    padding: 4px 10px;
+    padding: 5px 12px;
     font-size: 12px;
-    border-radius: 16px;
+    border-radius: 20px;
+    gap: 5px;
   }
+  .shard-label { display: none; }
 
-  #map-chapters { grid-template-columns: 1fr; }
-  .win-title  { font-size: 28px; }
-  .win-stats  { gap: 20px; }
+  #game-screen { overflow: hidden; }
+  #main-layout { flex-direction: column; overflow: hidden; height: calc(100vh - 52px); }
+  #content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
 
-  .tf-row     { flex-direction: column; align-items: flex-start; }
-  .tf-btns    { margin-top: 8px; }
-  .hotspot-row{ padding: 14px; gap: 6px; }
-  .hotspot-token { font-size: 13px; padding: 6px 10px; }
+  #story-panel {
+    padding: 12px 16px 10px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .story-top { margin-bottom: 8px; }
+  .chapter-badge-row { gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+  .chapter-badge { font-size: 9px; padding: 1px 6px; }
+  .arc-badge { font-size: 9px; padding: 1px 6px; }
+  .qtype-badge { font-size: 9px; padding: 1px 6px; }
+  .chapter-title { font-size: 15px; letter-spacing: 0.5px; }
+  .story-body { gap: 8px; margin-bottom: 8px; }
+  .story-icon { font-size: 14px; margin-top: 3px; }
+  .story-narrative { font-size: 13px; line-height: 1.65; }
+  .task-box { padding: 8px 12px; font-size: 12px; }
+  .task-label { font-size: 9px; letter-spacing: 2px; }
 
-  #settings-overlay .overlay-inner { padding: 20px 16px; }
-  .feedback-example { font-size: 11px; }
-  .settings-speed-group { flex-wrap: wrap; }
+  #question-zone {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+    padding-bottom: 80px;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+  }
 
   #controls-bar {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 8px 12px;
-    gap: 6px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    gap: 8px;
+    flex-shrink: 0;
+    height: auto;
   }
   .ctrl-btn {
+    flex: 1;
     justify-content: center;
-    padding: 10px 14px;
-    font-size: 11px;
+    padding: 10px 8px;
+    font-size: 10px;
+    letter-spacing: 0.5px;
   }
-  .xp-preview {
-    margin-left: 0;
-    justify-content: center;
-    padding: 6px 0;
-    font-size: 11px;
+  .xp-preview { display: none; }
+
+  .binary-gate { grid-template-columns: 1fr; gap: 10px; }
+  .match-grid  { grid-template-columns: 1fr; }
+  .choice-grid { grid-template-columns: 1fr; gap: 8px; }
+
+  .gate-btn {
+    padding: 18px 16px;
+    font-size: 14px;
   }
+  .choice-btn {
+    padding: 14px 14px;
+    font-size: 13px;
+  }
+  .fill-submit, .sort-verify, .conflict-check {
+    display: block;
+    width: 100%;
+    padding: 13px 16px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-align: center;
+    box-sizing: border-box;
+    margin-top: 12px;
+  }
+
+  .lesson-header { padding: 10px 14px; }
+  .lesson-body { padding: 14px; gap: 10px; }
+  .lesson-text { font-size: 14px; }
+  .lesson-code { font-size: 11px; padding: 10px 12px; }
+  .lesson-footer { padding: 10px 14px; }
+  .lesson-ready-btn { padding: 11px 20px; width: 100%; text-align: center; }
+
+  .review-lesson-btn { padding: 10px 14px; font-size: 11px; margin-bottom: 12px; }
+
+  .terminal-bar { padding: 6px 12px; }
+  .terminal-label { font-size: 9px; }
+  #terminal-output { font-size: 12px; min-height: 80px; max-height: 130px; }
+  .terminal-input-row { padding: 8px 12px; }
+  #user-input { font-size: 14px; }
+
+  .sort-chip { padding: 9px 14px; font-size: 12px; }
+  .sort-bank, .sort-target { min-height: 48px; padding: 10px; }
+
+  .fill-wrap { font-size: 14px; line-height: 2.8; padding: 16px; }
+  .fill-blank { font-size: 14px; min-width: 80px; }
+
+  .tf-row { flex-direction: column; align-items: flex-start; gap: 8px; padding: 10px 12px; }
+  .tf-btns { margin-top: 0; gap: 8px; }
+  .tf-btn { padding: 8px 20px; font-size: 12px; }
+  .tf-text { font-size: 12px; }
+
+  .hotspot-row { padding: 14px; gap: 8px; }
+  .hotspot-token { font-size: 13px; padding: 8px 12px; }
+
+  .match-chip { padding: 12px 14px; font-size: 12px; }
+
+  .feedback-title { font-size: 16px; }
+  .feedback-reward { font-size: 18px; }
+  .feedback-example { font-size: 11px; }
+
+  #map-chapters { grid-template-columns: 1fr; }
 
   .overlay-inner {
     padding: 20px 16px;
     max-height: 92vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 100%;
   }
-  .shard-history-inner {
-    max-height: 88vh;
+  .overlay {
+    align-items: flex-end;
+    padding: 0;
   }
+  .shard-history-inner { max-height: 85vh; }
 
-  #story-panel { padding: 10px 14px; }
-  .story-body { gap: 8px; }
-  .chapter-title { font-size: 15px; }
+  #settings-overlay .overlay-inner { padding: 20px 16px; }
+  .settings-speed-group { flex-wrap: wrap; }
 
-  .match-grid { grid-template-columns: 1fr; }
-  .binary-gate { grid-template-columns: 1fr; }
-  .gate-btn { padding: 18px 14px; }
-
-  .feedback-title { font-size: 16px; }
-  .feedback-reward { font-size: 18px; }
-
-  .sort-bank, .sort-target {
-    min-height: 44px;
-  }
-
-  .lesson-code { font-size: 11px; }
+  .win-title { font-size: 28px; }
+  .win-stats { gap: 20px; }
 
   #tour-box {
-    width: calc(100vw - 24px);
-    left: 12px !important;
-    bottom: 12px;
+    width: calc(100vw - 32px);
+    left: 16px !important;
+    bottom: 70px !important;
     top: auto !important;
   }
+
+  .prologue-content { padding: 24px 20px; }
+  .prologue-title   { font-size: 26px; }
+  .prologue-text    { font-size: 14px; }
+}
+
+@media (max-width: 400px) {
+  .logo-text { font-size: 13px; }
+  .shard-display { padding: 4px 10px; font-size: 11px; }
+  .chapter-title { font-size: 14px; }
+  .story-narrative { font-size: 12px; }
+  .ctrl-btn { font-size: 9px; padding: 10px 6px; }
+  .gate-btn { font-size: 13px; padding: 16px 12px; }
 }
 
 #sound-btn {
