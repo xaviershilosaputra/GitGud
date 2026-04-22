@@ -1,6 +1,6 @@
 # GitGud
 
-**GitGud** is an interactive and story-based Git learning platform. You play the role of a specialist exploring the ancient Kethara Repository, where you must restore a corrupted archive using real-world Git commands. The story is divided into five separate arcs that guide the user from basic file tracking to advanced professional workflows. All tasks require you to interact with a terminal or solve logic puzzles based on Git's working mechanism.
+**GitGud** is an interactive and story-based Git learning platform. You play the role of an archeologist exploring the ancient Kethara Repository, where you must restore a corrupted archive using real-world Git commands. The story is divided into five separate arcs that guide the user from basic file tracking to advanced professional workflows. All tasks require you to interact with a terminal or solve logic puzzles based on Git's working mechanism.
 
 ## Features
 
@@ -25,13 +25,17 @@
 
 ```text
 
-gitgud/
+/
+├── index.html
 ├── css/
 │   └── styles.css
 ├── js/
-│   ├── engine.js
-│   └── config.js
-└── index.html
+│   config.js
+│   engine.js
+├── docs/
+│   ├── ARCHITECTURE.md
+│   └── CONTRIBUTING.md
+└── README.md
 
 ```
 
