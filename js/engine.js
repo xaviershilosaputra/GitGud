@@ -330,7 +330,6 @@ const GAME = {
     if (logoText) logoText.textContent = GAME_CONFIG.name;
 
     if (!STATE.prologueDone) {
-      // First-time visitor: show prologue
       const prologueScreen = document.getElementById('prologue-screen');
       prologueScreen.classList.add('active');
       PROLOGUE.index = 0;
@@ -363,7 +362,6 @@ const GAME = {
     document.getElementById('shard-history-close').addEventListener('click', () => this.closeShardHistory());
     document.getElementById('settings-sound-toggle').addEventListener('click', () => { this.toggleSound(); this._updateSettingsSound(); });
     document.getElementById('settings-typewriter-toggle').addEventListener('click', () => this.toggleTypewriter());
-    document.getElementById('settings-animations-toggle').addEventListener('click', () => this.toggleAnimations());
     document.getElementById('settings-speed-slow').addEventListener('click', () => this.setTypewriterSpeed(28));
     document.getElementById('settings-speed-normal').addEventListener('click', () => this.setTypewriterSpeed(18));
     document.getElementById('settings-speed-fast').addEventListener('click', () => this.setTypewriterSpeed(8));
@@ -455,10 +453,8 @@ const GAME = {
     ws.classList.remove('active');
     ws.style.display = '';
 
-    // Hide game screen
     document.getElementById('game-screen').classList.remove('active');
 
-    // Show prologue fresh
     const prologue = document.getElementById('prologue-screen');
     prologue.style.opacity    = '1';
     prologue.style.transition = '';
@@ -840,12 +836,12 @@ const GAME = {
   openMap() {
     SFX.play('click');
     const mapEl = document.getElementById('map-chapters');
- 
+
     const maxCompletedIdx = GAME_CONFIG.chapters.reduce((max, ch, i) => {
       return STATE.completed.includes(ch.id) ? i : max;
     }, -1);
     const playableLimit = Math.max(maxCompletedIdx + 1, STATE.currentStep);
- 
+
     mapEl.innerHTML = GAME_CONFIG.chapters.map((ch, i) => {
       const done   = STATE.completed.includes(ch.id);
       const active = i === STATE.currentStep;
@@ -853,7 +849,7 @@ const GAME = {
       const cls    = 'map-item' + (done ? ' done' : active ? ' active' : locked ? ' locked' : '');
       return `<div class="${cls}" data-chapter="${i}" style="${!locked ? 'cursor:pointer' : ''}"><div class="map-dot"></div><span>${String(i+1).padStart(2,'0')}. ${escapeHtml(ch.title)}</span></div>`;
     }).join('');
- 
+
     mapEl.querySelectorAll('.map-item:not(.locked)').forEach((item) => {
       const idx = parseInt(item.dataset.chapter, 10);
       item.addEventListener('click', () => {
@@ -862,7 +858,7 @@ const GAME = {
         this.renderChapter(idx);
       });
     });
- 
+
     document.getElementById('map-overlay').classList.add('open');
     document.getElementById('map-overlay').setAttribute('aria-hidden', 'false');
   },
@@ -877,7 +873,6 @@ const GAME = {
     SFX.play('click');
     this._updateSettingsSound();
     this._updateTypewriterSettings();
-    this._updateAnimationsSettings();
     document.getElementById('settings-reset-confirm').style.display = 'none';
     document.getElementById('settings-overlay').classList.add('open');
     document.getElementById('settings-overlay').setAttribute('aria-hidden', 'false');
@@ -933,12 +928,6 @@ const GAME = {
     else document.getElementById('settings-speed-normal').classList.add('active');
   },
 
-  _updateAnimationsSettings() {
-    const btn = document.getElementById('settings-animations-toggle');
-    btn.textContent = STATE.animationsEnabled ? 'ANIMATIONS: ON' : 'ANIMATIONS: OFF';
-    btn.setAttribute('aria-pressed', STATE.animationsEnabled ? 'true' : 'false');
-  },
-
   _replayPrologue() {
     this._twId++;
     PROLOGUE.index = 0;
@@ -972,14 +961,6 @@ const GAME = {
   toggleTypewriter() {
     STATE.typewriterEnabled = !STATE.typewriterEnabled;
     this._updateTypewriterSettings();
-    this.saveState();
-    SFX.play('click');
-  },
-
-  toggleAnimations() {
-    STATE.animationsEnabled = !STATE.animationsEnabled;
-    this._updateAnimationsSettings();
-    applyAnimationState();
     this.saveState();
     SFX.play('click');
   },
