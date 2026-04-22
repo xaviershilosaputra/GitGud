@@ -375,7 +375,6 @@ const GAME = {
       this.reset();
     });
 
-    // Mobile nav
     const burgerBtn = document.getElementById('mobile-menu-btn');
     const mobileNavClose = document.getElementById('mobile-nav-close');
     if (burgerBtn) burgerBtn.addEventListener('click', () => this.openMobileNav());
@@ -1011,14 +1010,39 @@ const GAME = {
           <input type="text" id="user-input" autocomplete="off" spellcheck="false"
             autocorrect="off" autocapitalize="none" placeholder="type command..."
             aria-label="Type command here">
+          <button id="terminal-submit-btn" class="terminal-submit-btn" aria-label="Submit command">RUN</button>
         </div>
       </div>`;
     const inp = document.getElementById('user-input');
+    const submitBtn = document.getElementById('terminal-submit-btn');
     inp.focus();
 
     const history = [];
     let histIdx   = -1;
     let draft     = '';
+
+    const doSubmit = () => {
+      SFX.play('click');
+      const val = inp.value.trim();
+      if (!val) return;
+      history.unshift(val);
+      if (history.length > 20) history.pop();
+      histIdx = -1;
+      draft   = '';
+      this.appendTerminal(`$ ${val}`, 'tl-dim');
+      inp.value = '';
+      if (val.toLowerCase() === ch.command.toLowerCase()) {
+        this.appendTerminal('[SUCCESS] Command accepted.', 'tl-success');
+        inp.disabled = true;
+        if (submitBtn) submitBtn.disabled = true;
+        setTimeout(() => this.handleSuccess(ch), 700);
+      } else {
+        this.appendTerminal(`[ERROR] "${val}" not recognised. Check syntax and try again.`, 'tl-error');
+        SFX.play('error');
+      }
+    };
+
+    if (submitBtn) submitBtn.addEventListener('click', doSubmit);
 
     inp.addEventListener('keydown', e => {
       if (e.key === 'ArrowUp') {
@@ -1037,25 +1061,10 @@ const GAME = {
       }
     });
 
-    inp.addEventListener('keypress', e => {
+    inp.addEventListener('keydown', e => {
       if (e.key !== 'Enter') return;
-      SFX.play('click');
-      const val = inp.value.trim();
-      if (!val) return;
-      history.unshift(val);
-      if (history.length > 20) history.pop();
-      histIdx = -1;
-      draft   = '';
-      this.appendTerminal(`$ ${val}`, 'tl-dim');
-      inp.value = '';
-      if (val.toLowerCase() === ch.command.toLowerCase()) {
-        this.appendTerminal('[SUCCESS] Command accepted.', 'tl-success');
-        inp.disabled = true;
-        setTimeout(() => this.handleSuccess(ch), 700);
-      } else {
-        this.appendTerminal(`[ERROR] "${val}" not recognised. Check syntax and try again.`, 'tl-error');
-        SFX.play('error');
-      }
+      e.preventDefault();
+      doSubmit();
     });
   },
 
@@ -1159,30 +1168,114 @@ const GAME = {
 
   renderSort(ch, zone) {
     SORT = { dragging: null, dragEl: null };
+
     const bankLabel = document.createElement('p');
     bankLabel.className   = 'sort-label';
-    bankLabel.textContent = 'AVAILABLE COMMANDS - drag into the correct order below:';
+    bankLabel.textContent = 'AVAILABLE COMMANDS - click or drag to order:';
     zone.appendChild(bankLabel);
+
     const bank = document.createElement('div');
     bank.className = 'sort-bank';
     bank.id        = 'sort-bank';
-    bank.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
-    bank.addEventListener('drop',     e => { e.preventDefault(); if (SORT.dragEl && SORT.dragEl.parentElement !== bank) bank.appendChild(SORT.dragEl); });
-    [...ch.items].sort(() => Math.random() - 0.5).forEach(item => bank.appendChild(this._makeSortChip(item)));
-    zone.appendChild(bank);
+
     const targetLabel = document.createElement('p');
     targetLabel.className       = 'sort-label';
     targetLabel.style.marginTop = '12px';
-    targetLabel.textContent     = 'DROP HERE - in the correct sequence:';
-    zone.appendChild(targetLabel);
+    targetLabel.textContent     = 'YOUR SEQUENCE - click to remove, drag to reorder:';
+
     const target = document.createElement('div');
     target.className = 'sort-target';
     target.id        = 'sort-target';
     target.setAttribute('aria-label', 'Drop zone for correct sequence');
-    target.addEventListener('dragover',  e => { e.preventDefault(); target.classList.add('over'); e.dataTransfer.dropEffect = 'move'; });
-    target.addEventListener('dragleave', () => target.classList.remove('over'));
-    target.addEventListener('drop',      e => { e.preventDefault(); target.classList.remove('over'); if (SORT.dragEl) target.appendChild(SORT.dragEl); SFX.play('click'); });
+
+    const clearIndicator = (el) => {
+      const ind = el.querySelector('.drop-indicator');
+      if (ind) ind.remove();
+    };
+
+    const getInsertPosition = (e) => {
+      const chips = Array.from(target.querySelectorAll('.sort-chip:not(.drag)'));
+      if (!chips.length) return null;
+
+      let closest = null;
+      let closestOffset = Infinity;
+
+      for (const chip of chips) {
+        const rect = chip.getBoundingClientRect();
+        const chipMidX = rect.left + rect.width / 2;
+        const chipMidY = rect.top  + rect.height / 2;
+        const dx = e.clientX - chipMidX;
+        const dy = e.clientY - chipMidY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const weighted = Math.abs(dy) * 2 + Math.abs(dx);
+        if (weighted < closestOffset) {
+          closestOffset = weighted;
+          closest = { chip, before: dx < 0 };
+        }
+      }
+      return closest;
+    };
+
+    const showIndicator = (e) => {
+      clearIndicator(target);
+      const chips = Array.from(target.querySelectorAll('.sort-chip:not(.drag)'));
+      if (!chips.length) return; // empty target, no indicator needed
+
+      const pos = getInsertPosition(e);
+      if (!pos) return;
+
+      const ind = document.createElement('div');
+      ind.className = 'drop-indicator';
+
+      if (pos.before) {
+        target.insertBefore(ind, pos.chip);
+      } else {
+        pos.chip.insertAdjacentElement('afterend', ind);
+      }
+    };
+
+    bank.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+    bank.addEventListener('drop', e => {
+      e.preventDefault();
+      clearIndicator(target);
+      if (SORT.dragEl && SORT.dragEl.parentElement !== bank) {
+        bank.appendChild(SORT.dragEl);
+        SFX.play('click');
+      }
+    });
+
+    target.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      showIndicator(e);
+    });
+    target.addEventListener('dragleave', e => {
+      if (!target.contains(e.relatedTarget)) {
+        clearIndicator(target);
+      }
+    });
+    target.addEventListener('drop', e => {
+      e.preventDefault();
+      if (!SORT.dragEl) return;
+
+      const ind = target.querySelector('.drop-indicator');
+      if (ind) {
+        target.insertBefore(SORT.dragEl, ind);
+        ind.remove();
+      } else {
+        target.appendChild(SORT.dragEl);
+      }
+      SFX.play('click');
+    });
+
+    [...ch.items].sort(() => Math.random() - 0.5).forEach(item => {
+      bank.appendChild(this._makeSortChip(item, bank, target));
+    });
+
+    zone.appendChild(bank);
+    zone.appendChild(targetLabel);
     zone.appendChild(target);
+
     const verifyBtn = document.createElement('button');
     verifyBtn.className   = 'sort-verify';
     verifyBtn.textContent = 'VERIFY SEQUENCE';
@@ -1190,7 +1283,7 @@ const GAME = {
     zone.appendChild(verifyBtn);
   },
 
-  _makeSortChip(item) {
+  _makeSortChip(item, bank, target) {
     const chip = document.createElement('div');
     chip.className    = 'sort-chip';
     chip.textContent  = item;
@@ -1198,8 +1291,29 @@ const GAME = {
     chip.dataset.item = item;
     chip.setAttribute('role', 'option');
     chip.setAttribute('aria-label', item);
-    chip.addEventListener('dragstart', e => { SORT.dragEl = chip; chip.classList.add('drag'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', item); });
-    chip.addEventListener('dragend',   () => chip.classList.remove('drag'));
+
+    chip.addEventListener('dragstart', e => {
+      SORT.dragEl = chip;
+      chip.classList.add('drag');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', item);
+    });
+    chip.addEventListener('dragend', () => {
+      chip.classList.remove('drag');
+      SORT.dragEl = null;
+      const ind = document.getElementById('sort-target')?.querySelector('.drop-indicator');
+      if (ind) ind.remove();
+    });
+
+    chip.addEventListener('click', () => {
+      SFX.play('click');
+      if (chip.parentElement === bank) {
+        target.appendChild(chip);
+      } else if (chip.parentElement === target) {
+        bank.appendChild(chip);
+      }
+    });
+
     return chip;
   },
 
