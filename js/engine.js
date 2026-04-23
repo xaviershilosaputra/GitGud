@@ -157,20 +157,38 @@ const PROLOGUE = {
 
 const TOUR = {
   step: 0,
-  _ov:   null,
-  _ring: null,
-  _ro:   null,
-  steps: [
-    { target: '#story-panel',   title: 'The Story',         body: 'Each chapter begins with a narrative that sets the scene. Read it to understand the context before attempting the task.',                                  position: 'bottom' },
-    { target: '#question-zone', title: 'The Question Zone', body: 'This is where you answer. For terminal questions, type the command and press Enter. For others, click or drag your answer.',                             position: 'top'    },
-    { target: '#shard-display', title: 'Shards',            body: 'Shards are your score. You earn them for every correct answer. Click on the shard display to view your complete history of gains and expenses.',        position: 'bottom' },
-    { target: '#map-btn',       title: 'Expedition Map',    body: 'The map shows every chapter in the archive. Completed chapters are marked. Click any unlocked chapter to jump directly to it.',                          position: 'bottom' },
-    { target: '#settings-btn',  title: 'Settings',          body: 'Access settings to toggle sound, adjust typewriter speed, restart the expedition, replay the prologue, or view this guide again at any time.',          position: 'bottom' },
-    { target: '#git-graph',     title: 'The Chronicle',     body: 'The left panel draws your commit graph as you progress. Each dot is a chapter you have completed. Click any node to jump back to that chapter.',         position: 'right'  },
-    { target: '#right-panel',   title: 'Field Notes',       body: 'Every command you master gets logged here as a quick reference. By the end of the expedition you will have a complete Git cheat sheet.',                position: 'left'   },
+  _ov:         null,
+  _ring:       null,
+  _ro:         null,
+  _activeSteps: null,
+
+  _allSteps: [
+    { target: '#story-panel',    title: 'The Story',         body: 'Each chapter begins with a narrative that sets the scene. Read it to understand the context before attempting the task.',                                  position: 'bottom' },
+    { target: '#question-zone',  title: 'The Question Zone', body: 'This is where you answer. For terminal questions, type the command and press Enter. For others, click or drag your answer.',                             position: 'top'    },
+    { target: '#shard-display',  title: 'Shards',            body: 'Shards are your score. You earn them for every correct answer. Click on the shard display to view your complete history of gains and expenses.',        position: 'bottom' },
+    { target: '#map-btn',        title: 'Expedition Map',    body: 'The map shows every chapter in the archive. Completed chapters are marked. Click any unlocked chapter to jump directly to it.',                          position: 'bottom', desktopOnly: true },
+    { target: '#settings-btn',   title: 'Settings',          body: 'Access settings to toggle sound, adjust typewriter speed, restart the expedition, replay the prologue, or view this guide again at any time.',          position: 'bottom', desktopOnly: true },
+    { target: '#git-graph',      title: 'The Chronicle',     body: 'The left panel draws your commit graph as you progress. Each dot is a chapter you have completed. Click any node to jump back to that chapter.',         position: 'right',  desktopOnly: true },
+    { target: '#right-panel',    title: 'Field Notes',       body: 'Every command you master gets logged here as a quick reference. By the end of the expedition you will have a complete Git cheat sheet.',                position: 'left',   desktopOnly: true },
+    { target: '#mobile-menu-btn', title: 'Menu',             body: 'Tap the menu button to access the Expedition Map, Shard Ledger, and Settings from any screen.',                                                         position: 'bottom', mobileOnly: true },
   ],
 
+  _buildActiveSteps() {
+    const isMobile = window.innerWidth <= 900;
+    this._activeSteps = this._allSteps.filter(s => {
+      if (s.desktopOnly && isMobile)  return false;
+      if (s.mobileOnly  && !isMobile) return false;
+      const el = document.querySelector(s.target);
+      if (!el) return false;
+      const rect = el.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0;
+    });
+  },
+
+  get steps() { return this._activeSteps || this._allSteps; },
+
   start() {
+    this._buildActiveSteps();
     this.step = 0;
     this._build();
     this._render();
@@ -375,6 +393,7 @@ const GAME = {
       this.reset();
     });
 
+    // Mobile nav
     const burgerBtn = document.getElementById('mobile-menu-btn');
     const mobileNavClose = document.getElementById('mobile-nav-close');
     if (burgerBtn) burgerBtn.addEventListener('click', () => this.openMobileNav());
@@ -1219,7 +1238,7 @@ const GAME = {
     const showIndicator = (e) => {
       clearIndicator(target);
       const chips = Array.from(target.querySelectorAll('.sort-chip:not(.drag)'));
-      if (!chips.length) return; // empty target, no indicator needed
+      if (!chips.length) return; 
 
       const pos = getInsertPosition(e);
       if (!pos) return;
@@ -1292,6 +1311,7 @@ const GAME = {
     chip.setAttribute('role', 'option');
     chip.setAttribute('aria-label', item);
 
+    // ── Drag events ──
     chip.addEventListener('dragstart', e => {
       SORT.dragEl = chip;
       chip.classList.add('drag');
