@@ -148,17 +148,18 @@ body::before {
   position: relative;
   z-index: 1;
   text-align: center;
-  max-width: 680px;
-  padding: 40px;
+  width: 680px;
+  max-width: calc(100vw - 48px);
+  padding: 28px 36px;
   border: 1px solid var(--border);
   background: rgba(250,244,228,0.88);
   box-shadow: 0 0 0 4px rgba(176,136,72,0.12), inset 0 0 40px rgba(181,114,42,0.04);
 }
 
 .prologue-emblem {
-  font-size: 28px;
+  font-size: 24px;
   color: var(--gold);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   animation: emblemPulse 3s ease-in-out infinite;
 }
 @keyframes emblemPulse {
@@ -171,16 +172,16 @@ body::before {
   font-size: 11px;
   letter-spacing: 6px;
   color: var(--text-dim);
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .prologue-title {
   font-family: var(--font-display);
-  font-size: clamp(26px, 5vw, 46px);
+  font-size: clamp(22px, 4vw, 36px);
   font-weight: 900;
   color: var(--text-bright);
   line-height: 1.15;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .prologue-title span { color: var(--accent); font-style: italic; }
 
@@ -188,18 +189,19 @@ body::before {
   width: 120px;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border2), transparent);
-  margin: 20px auto;
+  margin: 14px auto;
 }
 
 .prologue-text {
   font-family: var(--font-body);
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text);
-  line-height: 1.9;
+  line-height: 1.75;
   text-align: left;
-  min-height: 140px;
+  height: 245px;
+  overflow: hidden;
   font-style: italic;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
 .prologue-actions {
@@ -228,7 +230,7 @@ body::before {
   background: transparent;
   border: 1px solid var(--accent);
   color: var(--accent);
-  padding: 10px 28px;
+  padding: 10px 14px;
   font-family: var(--font-display);
   font-size: 12px;
   letter-spacing: 3px;
@@ -861,6 +863,8 @@ body::before {
 .sort-chip.correct-chip { border-color: var(--green); color: var(--green); background: var(--green-dim); }
 .sort-chip.wrong-chip   { border-color: var(--red);   color: var(--red);   background: var(--red-dim); }
 
+/* Drop position indicator: a thin vertical bar that appears between chips
+   during a drag to show exactly where the dragged item will land */
 .drop-indicator {
   display: inline-flex;
   width: 3px;
@@ -1725,9 +1729,9 @@ body::before {
     top: auto !important;
   }
 
-  .prologue-content { padding: 24px 20px; }
-  .prologue-title   { font-size: 26px; }
-  .prologue-text    { font-size: 14px; }
+  .prologue-content { padding: 20px 18px; }
+  .prologue-title   { font-size: 22px; }
+  .prologue-text    { font-size: 14px; line-height: 1.7; height: 255px; overflow: hidden; }
 }
 
 @media (max-width: 400px) {
