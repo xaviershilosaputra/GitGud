@@ -1050,7 +1050,7 @@ const GAME = {
       draft   = '';
       this.appendTerminal(`$ ${val}`, 'tl-dim');
       inp.value = '';
-      if (val.toLowerCase() === ch.command.toLowerCase()) {
+      if (normalizeCmd(val) === normalizeCmd(ch.command)) {
         this.appendTerminal('[SUCCESS] Command accepted.', 'tl-success');
         inp.disabled = true;
         if (submitBtn) submitBtn.disabled = true;
@@ -1659,7 +1659,7 @@ const GAME = {
         draft   = '';
         this.appendTerminal(`$ ${val}`, 'tl-dim');
         inp.value = '';
-        if (val.toLowerCase() === stepObj.command.toLowerCase()) {
+        if (normalizeCmd(val) === normalizeCmd(stepObj.command)) {
           this.appendTerminal(`[OK] ${stepObj.label} complete.`, 'tl-success');
           inp.disabled = true;
           currentStep++;
@@ -1681,6 +1681,10 @@ function escapeHtml(str) {
     .replace(/</g,'&lt;')
     .replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;');
+}
+
+function normalizeCmd(str) {
+  return str.toLowerCase().replace(/'([^']*)'/g, '"$1"');
 }
 
 document.addEventListener('DOMContentLoaded', () => GAME.init());
